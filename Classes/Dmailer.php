@@ -358,9 +358,18 @@ class Dmailer implements LoggerAwareInterface
             $recipient = array();
             if (GeneralUtility::validEmail($recipRow['email'])) {
                 $email = $recipRow['email'];
-                $name = $this->ensureCorrectEncoding($recipRow['name']);
+                $name = $recipRow['name'] ?? '';
+                if ($name == '') {
+                    if ($recipRow['first_name'] ?? '') {
+                        $name = $recipRow['first_name'] . ' ';
+                    }
+                    if ($recipRow['middle_name'] ?? '') {
+                        $name .= $recipRow['middle_name'] . ' ';
+                    }
+                    $name .= $recipRow['last_name'] ?? '';
+                }
 
-                $recipient = $this->createRecipient($email, $name);
+                $recipient = $this->createRecipient($email, $this->ensureCorrectEncoding($name));
             }
 
             if ($returnCode && !empty($recipient)) {

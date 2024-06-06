@@ -735,11 +735,6 @@ class DirectMail extends AbstractPlugin
 
         $theLink = $this->getLink($theLink);
 
-        // remove mailto if it's an email link
-        if (strtolower(substr($theLink, 0, 7)) === 'mailto:') {
-            $theLink = substr($theLink, 7);
-        }
-
         return $this->cObj->getCurrentVal() . ' (###LINK_PREFIX### ' . $theLink . ' )';
     }
 

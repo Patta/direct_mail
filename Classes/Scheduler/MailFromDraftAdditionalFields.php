@@ -118,12 +118,12 @@ class MailFromDraftAdditionalFields extends AbstractAdditionalFieldProvider
                 $result = true;
             } else {
                 // TODO: localization
-                $this->addMessage('No draft record selected', FlashMessage::ERROR);
+                $this->addMessage('No draft record selected', \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR);
                 $result = false;
             }
         } else {
             // TODO: localization
-            $this->addMessage('No drafts found. Please add one first through the direct mail process', FlashMessage::ERROR);
+            $this->addMessage('No drafts found. Please add one first through the direct mail process', \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR);
             $result = false;
         }
 
@@ -137,7 +137,7 @@ class MailFromDraftAdditionalFields extends AbstractAdditionalFieldProvider
      * @param	array				$submittedData Array containing the data submitted by the user
      * @param	AbstractTask	$task Reference to the current task object
      */
-    public function saveAdditionalFields(array $submittedData, AbstractTask $task)
+    public function saveAdditionalFields(array $submittedData, AbstractTask $task): void
     {
         $task->setDraft($submittedData['selecteddraft']);
     }

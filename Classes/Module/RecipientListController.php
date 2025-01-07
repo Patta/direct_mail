@@ -214,7 +214,7 @@ final class RecipientListController extends MainController
             'sysDmailGroupIcon' => $this->iconFactory->getIconForRecord(
                 'sys_dmail_group', 
                 [], 
-                Icon::SIZE_SMALL
+                \TYPO3\CMS\Core\Imaging\IconSize::SMALL
             )
         ];
 
@@ -227,7 +227,7 @@ final class RecipientListController extends MainController
             $result = $this->compileMailGroup((int)$row['uid']);
             $data['rows'][] = [
                 'id'            => $row['uid'],
-                'icon'          => $this->iconFactory->getIconForRecord('sys_dmail_group', $row, Icon::SIZE_SMALL)->render(),
+                'icon'          => $this->iconFactory->getIconForRecord('sys_dmail_group', $row, \TYPO3\CMS\Core\Imaging\IconSize::SMALL)->render(),
                 'editLink'      => $this->editLink('sys_dmail_group', $row['uid']),
                 'reciplink'     => $this->linkRecipRecord($row['uid']),
                 'reciplinkText' => htmlspecialchars(GeneralUtility::fixed_lgd_cs($row['title'], 30)),
@@ -462,7 +462,7 @@ final class RecipientListController extends MainController
         $data = [
             'queryLimitDisabled' => $group['queryLimitDisabled'] ?? true,
             'group_id' => $this->group_uid,
-            'group_icon' => $this->iconFactory->getIconForRecord('sys_dmail_group', $group, Icon::SIZE_SMALL),
+            'group_icon' => $this->iconFactory->getIconForRecord('sys_dmail_group', $group, \TYPO3\CMS\Core\Imaging\IconSize::SMALL),
             'group_title' => htmlspecialchars($group['title'] ?? ''),
             'group_totalRecipients' => $this->countRecipients($idLists),
             'group_link_listall' => ($this->lCmd == '') ? (string)$this->buildUriFromRoute(

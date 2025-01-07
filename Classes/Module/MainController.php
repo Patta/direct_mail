@@ -303,7 +303,7 @@ class MainController
 
     protected function getIconActionsOpen(): Icon
     {
-        return $this->iconFactory->getIcon('actions-open', Icon::SIZE_SMALL);
+        return $this->iconFactory->getIcon('actions-open', \TYPO3\CMS\Core\Imaging\IconSize::SMALL);
     }
 
     /**
@@ -321,7 +321,7 @@ class MainController
         $output = [
             'title' => $lang->sL($lllFile . ':dmail_number_records'),
             'editLinkTitle' => $lang->sL($lllFile . ':dmail_edit'),
-            'actionsOpen' => $this->iconFactory->getIcon('actions-open', Icon::SIZE_SMALL),
+            'actionsOpen' => $this->iconFactory->getIcon('actions-open', \TYPO3\CMS\Core\Imaging\IconSize::SMALL),
             'counter' => is_array($listArr) ? count($listArr) : 0,
             'rows' => [],
         ];

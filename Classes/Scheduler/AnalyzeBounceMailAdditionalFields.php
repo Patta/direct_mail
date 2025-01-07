@@ -84,7 +84,7 @@ class AnalyzeBounceMailAdditionalFields extends AbstractAdditionalFieldProvider
      * @param array $submittedData An array containing the data submitted by the add/edit task form
      * @param AnalyzeBounceMail $task Reference to the scheduler backend module
      */
-    public function saveAdditionalFields(array $submittedData, AbstractTask $task)
+    public function saveAdditionalFields(array $submittedData, AbstractTask $task): void
     {
         $task->setServer($submittedData['bounceServer']);
         $task->setPort((int)$submittedData['bouncePort']);
@@ -123,14 +123,14 @@ class AnalyzeBounceMailAdditionalFields extends AbstractAdditionalFieldProvider
                 $this->addMessage(
                     $this->getLanguangeService()->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang_mod2-6.xlf:scheduler.bounceMail.dataVerification') .
                     $e->getMessage(),
-                    FlashMessage::ERROR
+                    \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
                 );
                 $return = false;
             }
         } else {
             $this->addMessage(
                 $this->getLanguangeService()->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang_mod2-6.xlf:scheduler.bounceMail.phpImapError'),
-                FlashMessage::ERROR
+                \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
             );
             $return = false;
         }

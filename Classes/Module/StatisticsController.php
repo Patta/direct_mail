@@ -275,7 +275,7 @@ final class StatisticsController extends MainController
             foreach ($rows as $row) {
                 $data[] = [
                     'id'              => $row['uid'],
-                    'icon'            => $this->iconFactory->getIconForRecord('sys_dmail', $row, Icon::SIZE_SMALL)->render(),
+                    'icon'            => $this->iconFactory->getIconForRecord('sys_dmail', $row, \TYPO3\CMS\Core\Imaging\IconSize::SMALL)->render(),
                     'url'             => $this->linkDMailRecord($row['uid']),
                     'subject'         => htmlspecialchars($row['subject']),
                     'subjectShort'    => htmlspecialchars(GeneralUtility::fixed_lgd_cs($row['subject'], 50)),
@@ -682,7 +682,7 @@ final class StatisticsController extends MainController
             }
         }
 
-        $iconAppsToolbarMenuSearch = $this->iconFactory->getIcon('apps-toolbar-menu-search', Icon::SIZE_SMALL)->render();
+        $iconAppsToolbarMenuSearch = $this->iconFactory->getIcon('apps-toolbar-menu-search', \TYPO3\CMS\Core\Imaging\IconSize::SMALL)->render();
         $tblLines = [];
 
         foreach ($urlCounter['total'] as $id => $_) {
@@ -789,9 +789,9 @@ final class StatisticsController extends MainController
         );
 
         // The icons:
-        $listIcons = $this->iconFactory->getIcon('actions-system-list-open', Icon::SIZE_SMALL);
-        $csvIcons  = $this->iconFactory->getIcon('actions-document-export-csv', Icon::SIZE_SMALL);
-        $hideIcons = $this->iconFactory->getIcon('actions-lock', Icon::SIZE_SMALL);
+        $listIcons = $this->iconFactory->getIcon('actions-system-list-open', \TYPO3\CMS\Core\Imaging\IconSize::SMALL);
+        $csvIcons  = $this->iconFactory->getIcon('actions-document-export-csv', \TYPO3\CMS\Core\Imaging\IconSize::SMALL);
+        $hideIcons = $this->iconFactory->getIcon('actions-lock', \TYPO3\CMS\Core\Imaging\IconSize::SMALL);
 
         // Table with Icon
         $responseResult = $sysDmailMaillogRepository->countReturnCode($row['uid']);
@@ -1387,8 +1387,8 @@ final class StatisticsController extends MainController
         $res = GeneralUtility::makeInstance(SysDmailMaillogRepository::class)->selectSysDmailMaillogsCompactView($row['uid']);
 
         $data = [
-            'icon'          => $this->iconFactory->getIconForRecord('sys_dmail', $row, Icon::SIZE_SMALL)->render(),
-            'iconInfo'      => $this->iconFactory->getIcon('actions-document-info', Icon::SIZE_SMALL)->render(),
+            'icon'          => $this->iconFactory->getIconForRecord('sys_dmail', $row, \TYPO3\CMS\Core\Imaging\IconSize::SMALL)->render(),
+            'iconInfo'      => $this->iconFactory->getIcon('actions-document-info', \TYPO3\CMS\Core\Imaging\IconSize::SMALL)->render(),
             'subject'       => htmlspecialchars($row['subject']),
             'from_name'     => htmlspecialchars($row['from_name']),
             'from_email'    => htmlspecialchars($row['from_email']),

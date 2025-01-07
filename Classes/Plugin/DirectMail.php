@@ -254,7 +254,7 @@ class DirectMail
         return $content;
     }
 
-    public function pi_loadLL(string $languageFilePath = '')
+    public function pi_loadLL(string $languageFilePath = ''): void
     {
         if ($this->LOCAL_LANG_loaded) {
             return;
@@ -306,8 +306,8 @@ class DirectMail
     public function getMenuContent(string $cType): string
     {
         $str = $this->cObj->cObjGetSingle(
-            $GLOBALS['TSFE']->tmpl->setup['tt_content.'][$cType],
-            $GLOBALS['TSFE']->tmpl->setup['tt_content.'][$cType . '.']
+            $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.typoscript')->getSetupArray()['tt_content.'][$cType],
+            $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.typoscript')->getSetupArray()['tt_content.'][$cType . '.']
         );
 
         return $str;
@@ -928,7 +928,7 @@ class DirectMail
     {
         $labels = GeneralUtility::trimExplode(',', $this->labelsList);
         foreach ($labels as $labelName) {
-            $markerArray['###' . strtoupper($labelName) . '###'] = (string)LocalizationUtility::translate($labelName, 'direct_mail');
+            $markerArray['###' . strtoupper($labelName) . '###'] = (string)LocalizationUtility::translate($labelName, 'DirectMail');
         }
         return $markerArray;
     }

@@ -325,7 +325,7 @@ class JumpurlController implements MiddlewareInterface
      */
     protected function calculateJumpUrlHash(string $targetUrl): string
     {
-        return GeneralUtility::hmac($targetUrl, 'jumpurl');
+        return \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Crypto\HashService::class)->hmac($targetUrl, 'jumpurl');
     }
 
     /**

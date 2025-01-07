@@ -212,7 +212,7 @@ final class MailerEngineController extends MainController
             foreach ($rows as $row) {
                 $data[] = [
                     'uid'             => $row['uid'],
-                    'icon'            => $this->iconFactory->getIconForRecord('sys_dmail', $row, Icon::SIZE_SMALL)->render(),
+                    'icon'            => $this->iconFactory->getIconForRecord('sys_dmail', $row, \TYPO3\CMS\Core\Imaging\IconSize::SMALL)->render(),
                     'subject'         => $this->linkDMailRecord(htmlspecialchars(GeneralUtility::fixed_lgd_cs($row['subject'], 100)), $row['uid']),
                     'scheduled'       => BackendUtility::datetime($row['scheduled']),
                     'scheduled_begin' => $row['scheduled_begin'] ? BackendUtility::datetime($row['scheduled_begin']) : '',

@@ -43,6 +43,6 @@ class AuthCodeUtility
         }
         $preKey = implode('|', $recCopy_temp);
 
-        return GeneralUtility::hmac($preKey);
+        return \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Crypto\HashService::class)->hmac($preKey, 'changeMe');
     }
 }

@@ -21,6 +21,7 @@ use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconFactory;
+use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
@@ -303,7 +304,7 @@ class MainController
 
     protected function getIconActionsOpen(): Icon
     {
-        return $this->iconFactory->getIcon('actions-open', \TYPO3\CMS\Core\Imaging\IconSize::SMALL);
+        return $this->iconFactory->getIcon('actions-open', IconSize::SMALL);
     }
 
     /**
@@ -321,7 +322,7 @@ class MainController
         $output = [
             'title' => $lang->sL($lllFile . ':dmail_number_records'),
             'editLinkTitle' => $lang->sL($lllFile . ':dmail_edit'),
-            'actionsOpen' => $this->iconFactory->getIcon('actions-open', \TYPO3\CMS\Core\Imaging\IconSize::SMALL),
+            'actionsOpen' => $this->iconFactory->getIcon('actions-open', IconSize::SMALL),
             'counter' => is_array($listArr) ? count($listArr) : 0,
             'rows' => [],
         ];

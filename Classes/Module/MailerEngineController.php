@@ -21,6 +21,7 @@ use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconFactory;
+use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
@@ -95,12 +96,12 @@ final class MailerEngineController extends MainController
 
                     $itemsPerPage = 100; //@TODO
                     $paginator = GeneralUtility::makeInstance(
-                        ArrayPaginator::class, 
-                        $mailerEngine['data'], 
-                        $this->currentPageNumber, 
+                        ArrayPaginator::class,
+                        $mailerEngine['data'],
+                        $this->currentPageNumber,
                         $itemsPerPage
                     );
-                     
+
                     $tasks = $this->getSchedulerTable();
                     $view->assignMultiple(
                         [
@@ -212,7 +213,7 @@ final class MailerEngineController extends MainController
             foreach ($rows as $row) {
                 $data[] = [
                     'uid'             => $row['uid'],
-                    'icon'            => $this->iconFactory->getIconForRecord('sys_dmail', $row, \TYPO3\CMS\Core\Imaging\IconSize::SMALL)->render(),
+                    'icon'            => $this->iconFactory->getIconForRecord('sys_dmail', $row, IconSize::SMALL)->render(),
                     'subject'         => $this->linkDMailRecord(htmlspecialchars(GeneralUtility::fixed_lgd_cs($row['subject'], 100)), $row['uid']),
                     'scheduled'       => BackendUtility::datetime($row['scheduled']),
                     'scheduled_begin' => $row['scheduled_begin'] ? BackendUtility::datetime($row['scheduled_begin']) : '',

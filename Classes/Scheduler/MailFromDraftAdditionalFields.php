@@ -18,6 +18,7 @@ namespace DirectMailTeam\DirectMail\Scheduler;
 use DirectMailTeam\DirectMail\Repository\SysDmailRepository;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Scheduler\AbstractAdditionalFieldProvider;
 use TYPO3\CMS\Scheduler\Controller\SchedulerModuleController;
@@ -118,12 +119,12 @@ class MailFromDraftAdditionalFields extends AbstractAdditionalFieldProvider
                 $result = true;
             } else {
                 // TODO: localization
-                $this->addMessage('No draft record selected', \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR);
+                $this->addMessage('No draft record selected', ContextualFeedbackSeverity::ERROR);
                 $result = false;
             }
         } else {
             // TODO: localization
-            $this->addMessage('No drafts found. Please add one first through the direct mail process', \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR);
+            $this->addMessage('No drafts found. Please add one first through the direct mail process', ContextualFeedbackSeverity::ERROR);
             $result = false;
         }
 

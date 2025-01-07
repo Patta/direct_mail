@@ -24,6 +24,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Configuration\TranslationConfigurationProvider;
+use TYPO3\CMS\Backend\Routing\PreviewUriBuilder;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Error\Http\ServiceUnavailableException;
@@ -32,6 +33,7 @@ use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\ImmediateResponseException;
 use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Imaging\Icon;
+use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Routing\InvalidRouteArgumentsException;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
@@ -602,7 +604,7 @@ final class DmailController extends MainController
     {
         // opened - closes
         $icon = $expand ? 'apps-pagetree-expand' : 'apps-pagetree-collapse';
-        return $this->iconFactory->getIcon($icon, \TYPO3\CMS\Core\Imaging\IconSize::SMALL);
+        return $this->iconFactory->getIcon($icon, IconSize::SMALL);
     }
 
     /**
@@ -635,11 +637,11 @@ final class DmailController extends MainController
                     $langTitle = (count($languages) > 1 ? ' - ' . $lang['title'] : '');
                     $plainParams = $this->implodedParams['plainParams'] ?? '' . $langParam;
                     $htmlParams = $this->implodedParams['HTMLParams'] ?? '' . $langParam;
-                    $htmlIcon = $this->iconFactory->getIcon('directmail-dmail-preview-html', \TYPO3\CMS\Core\Imaging\IconSize::SMALL, $langIconOverlay);
-                    $plainIcon = $this->iconFactory->getIcon('directmail-dmail-preview-text', \TYPO3\CMS\Core\Imaging\IconSize::SMALL, $langIconOverlay);
-                    $createIcon = $this->iconFactory->getIcon('directmail-dmail-new', \TYPO3\CMS\Core\Imaging\IconSize::SMALL, $langIconOverlay);
+                    $htmlIcon = $this->iconFactory->getIcon('directmail-dmail-preview-html', IconSize::SMALL, $langIconOverlay);
+                    $plainIcon = $this->iconFactory->getIcon('directmail-dmail-preview-text', IconSize::SMALL, $langIconOverlay);
+                    $createIcon = $this->iconFactory->getIcon('directmail-dmail-new', IconSize::SMALL, $langIconOverlay);
 
-                    $attributes = \TYPO3\CMS\Backend\Routing\PreviewUriBuilder::create($row['uid'], '')
+                    $attributes = PreviewUriBuilder::create($row['uid'], '')
                         ->withRootLine(BackendUtility::BEgetRootLine($row['uid']))
                         //->withSection('')
                         ->withAdditionalQueryParameters($htmlParams)
@@ -654,7 +656,7 @@ final class DmailController extends MainController
 
                     $previewHTMLLink .= '<a ' . $serializedAttributes . '>' . $htmlIcon . '</a>';
 
-                    $attributes = \TYPO3\CMS\Backend\Routing\PreviewUriBuilder::create($row['uid'], '')
+                    $attributes = PreviewUriBuilder::create($row['uid'], '')
                         ->withRootLine(BackendUtility::BEgetRootLine($row['uid']))
                         //->withSection('')
                         ->withAdditionalQueryParameters($plainParams)
@@ -695,7 +697,7 @@ final class DmailController extends MainController
 
                 $data[] = [
                     'id' => $row['uid'],
-                    'pageIcon' => $this->iconFactory->getIconForRecord('pages', $row, \TYPO3\CMS\Core\Imaging\IconSize::SMALL),
+                    'pageIcon' => $this->iconFactory->getIconForRecord('pages', $row, IconSize::SMALL),
                     'title' => htmlspecialchars($row['title']),
                     'createDmailLink' => $createDmailLink,
                     'createLink' => $createLink,
@@ -800,13 +802,13 @@ final class DmailController extends MainController
         foreach ($rows as $row) {
             $data[] = [
                 'id' => $row['uid'],
-                'icon' => $this->iconFactory->getIconForRecord('sys_dmail', $row, \TYPO3\CMS\Core\Imaging\IconSize::SMALL)->render(),
+                'icon' => $this->iconFactory->getIconForRecord('sys_dmail', $row, IconSize::SMALL)->render(),
                 'link' => $this->linkDMailRecord($row['uid']),
                 'linkText' => htmlspecialchars($row['subject'] ?: '_'),
                 'tstamp' => BackendUtility::date($row['tstamp']),
                 'issent' => ($row['issent'] ? $this->languageService->sL($this->lllFile . ':dmail_yes') : $this->languageService->sL($this->lllFile . ':dmail_no')),
                 'renderedsize' => ($row['renderedsize'] ? GeneralUtility::formatSize($row['renderedsize']) : ''),
-                'attachment' => ($row['attachment'] ? $this->iconFactory->getIcon('directmail-attachment', \TYPO3\CMS\Core\Imaging\IconSize::SMALL) : ''),
+                'attachment' => ($row['attachment'] ? $this->iconFactory->getIcon('directmail-attachment', IconSize::SMALL) : ''),
                 'type' => ($row['type'] & 0x1 ? $this->languageService->sL($this->lllFile . ':nl_l_tUrl') : $this->languageService->sL($this->lllFile . ':nl_l_tPage')) . ($row['type']  & 0x2 ? ' (' . $this->languageService->sL($this->lllFile . ':nl_l_tDraft') . ')' : ''),
                 'deleteLink' => $this->deleteLink($row['uid']),
             ];
@@ -1062,7 +1064,7 @@ final class DmailController extends MainController
         ];
 
         return [
-            'icon' => $this->iconFactory->getIconForRecord('sys_dmail', $row, \TYPO3\CMS\Core\Imaging\IconSize::SMALL),
+            'icon' => $this->iconFactory->getIconForRecord('sys_dmail', $row, IconSize::SMALL),
             'title' => htmlspecialchars($row['subject'] ?? ''),
             'theadTitle1' => DirectMailUtility::fName('subject'),
             'theadTitle2' => GeneralUtility::fixed_lgd_cs(htmlspecialchars($row['subject'] ?? ''), 60),
@@ -1117,7 +1119,7 @@ final class DmailController extends MainController
 
                 $data['test_dmail_group_table'][] = [
                     'moduleUrl' => $moduleUrl,
-                    'iconFactory' => $this->iconFactory->getIconForRecord('sys_dmail_group', $row, \TYPO3\CMS\Core\Imaging\IconSize::SMALL),
+                    'iconFactory' => $this->iconFactory->getIconForRecord('sys_dmail_group', $row, IconSize::SMALL),
                     'title' => htmlspecialchars($row['title']),
                     'uid' => $row['uid'],
                     'tds' => $this->displayMailGroupTest($result),
@@ -1384,7 +1386,7 @@ final class DmailController extends MainController
                 $moduleUrl = '';
                 $editOnClick = '';
                 if ($row['uid']) {
-                    $tableIcon = $this->iconFactory->getIconForRecord($table, $row, \TYPO3\CMS\Core\Imaging\IconSize::SMALL);
+                    $tableIcon = $this->iconFactory->getIconForRecord($table, $row, IconSize::SMALL);
                     if ($editLinkFlag) {
                         $params = [
                             'edit' => [
@@ -1829,7 +1831,7 @@ final class DmailController extends MainController
 
                 $output['rows'][] = [
                     'uid' => $row['uid'],
-                    'icon' => $this->iconFactory->getIconForRecord('tt_content', $row, \TYPO3\CMS\Core\Imaging\IconSize::SMALL),
+                    'icon' => $this->iconFactory->getIconForRecord('tt_content', $row, IconSize::SMALL),
                     'header' => $row['header'],
                     'CType' => $row['CType'],
                     'list_type' => $row['list_type'],

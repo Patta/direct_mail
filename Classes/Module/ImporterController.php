@@ -35,6 +35,7 @@ use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
+use TYPO3\CMS\Core\Resource\DefaultUploadFolderResolver;
 use TYPO3\CMS\Core\Resource\DuplicationBehavior;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
@@ -1075,8 +1076,9 @@ final class ImporterController extends MainController
      */
     public function userTempFolder(): string
     {
+        $defaultUploadFolderResolver = GeneralUtility::makeInstance(DefaultUploadFolderResolver::class);
         /** @var \TYPO3\CMS\Core\Resource\Folder $folder */
-        $folder = $this->beUser->getDefaultUploadTemporaryFolder();
+        $folder = $defaultUploadFolderResolver->resolve($this->beUser);
         return $folder->getPublicUrl();
     }
 

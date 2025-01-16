@@ -6,7 +6,6 @@ namespace DirectMailTeam\DirectMail\Module;
 
 use DirectMailTeam\DirectMail\DmQueryGenerator;
 use DirectMailTeam\DirectMail\Enum\DmailRecipientEnum;
-use DirectMailTeam\DirectMail\Importer;
 use DirectMailTeam\DirectMail\Event\RecipientListCompileMailGroupEvent;
 use DirectMailTeam\DirectMail\Repository\FeGroupsRepository;
 use DirectMailTeam\DirectMail\Repository\FeUsersRepository;
@@ -17,18 +16,15 @@ use DirectMailTeam\DirectMail\Utility\DmCsvUtility;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Backend\Attribute\Controller;
+use Psr\Http\Message\UriInterface;
+use TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Core\Http\HtmlResponse;
-use TYPO3\CMS\Core\Http\Uri;
-use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Localization\LanguageService;
-use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
@@ -38,6 +34,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 final class RecipientListController extends MainController
 {
     protected FlashMessageQueue $flashMessageQueue;
+
+    protected array $categories = [];
 
     public function __construct(
         protected readonly ModuleTemplateFactory $moduleTemplateFactory,
@@ -432,10 +430,10 @@ final class RecipientListController extends MainController
      *
      * @param int $uid Uid of the recipient link
      *
-     * @return Uri The link
+     * @return UriInterface The link
      * @throws RouteNotFoundException If the named route doesn't exist
      */
-    protected function linkRecipRecord(int $uid): Uri
+    protected function linkRecipRecord(int $uid): UriInterface
     {
         return $this->buildUriFromRoute(
             $this->moduleName,
@@ -498,7 +496,7 @@ final class RecipientListController extends MainController
                     $message = $this->createFlashMessage(
                         '',
                         $this->languageService->sl($this->lllFile . ':mailgroup_table_disallowed_csv'),
-                        2,
+                        ContextualFeedbackSeverity::ERROR,
                         false
                     );
                     $this->messageQueue->addMessage($message);
@@ -818,7 +816,7 @@ final class RecipientListController extends MainController
                 'table' => $this->table,
                 'thisID' => $this->uid,
                 'cmd' => $this->cmd,
-                'html' => $row['module_sys_dmail_html'] ? true : false,
+                'html' => (bool)$row['module_sys_dmail_html'],
             ];
             $this->categories = GeneralUtility::makeInstance(TempRepository::class)->makeCategories($this->table, $row, $this->sys_language_uid);
 

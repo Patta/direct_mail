@@ -8,22 +8,15 @@ use DirectMailTeam\DirectMail\Utility\TsUtility;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Backend\Attribute\Controller;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
-use TYPO3\CMS\Core\Messaging\FlashMessage;
-use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Imaging\IconFactory;
-use DirectMailTeam\DirectMail\Repository\PagesRepository;
-use TYPO3\CMS\Backend\Routing\UriBuilder;
-use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 
 final class ConfigurationController extends MainController
@@ -137,20 +130,20 @@ final class ConfigurationController extends MainController
     }
 
     /**
-     * @return ResponseFactory
+     * @return ResponseFactoryInterface
      */
     protected function getResponseFactory(): ResponseFactoryInterface
     {
         return GeneralUtility::makeInstance(ResponseFactoryInterface::class);
     }
 
-    public function updateConfigAction(ServerRequestInterface $request): ResponseInterface
+    public function updateConfigAction(ServerRequestInterface $request): ?ResponseInterface
     {
         $this->id = (int)($request->getParsedBody()['uid'] ?? 0);
         $permsClause = $this->getBackendUser()->getPagePermsClause(Permission::PAGE_SHOW);
         $pageAccess = BackendUtility::readPageAccess($this->id, $permsClause);
         $this->pageinfo = is_array($pageAccess) ? $pageAccess : [];
-        $this->access = is_array($this->pageinfo) ? true : false;
+        $this->access = is_array($this->pageinfo);
 
 
         if (($this->id && $this->access) || ($this->isAdmin() && !$this->id)) {
@@ -191,6 +184,8 @@ final class ConfigurationController extends MainController
 
             }
         }
+
+        return null;
     }
 
     protected function setDefaultValues(): void

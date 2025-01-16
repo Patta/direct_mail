@@ -16,18 +16,15 @@ use DirectMailTeam\DirectMail\Utility\TsUtility;
 use DirectMailTeam\DirectMail\Utility\Typo3ConfVarsUtility;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Backend\Attribute\Controller;
+use Psr\Http\Message\UriInterface;
+use TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
-use TYPO3\CMS\Core\Http\HtmlResponse;
-use TYPO3\CMS\Core\Http\Uri;
-use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Localization\LanguageService;
-use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 use TYPO3\CMS\Core\Pagination\ArrayPaginator;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
@@ -38,6 +35,8 @@ use TYPO3\CMS\Core\Utility\MathUtility;
 final class StatisticsController extends MainController
 {
     protected FlashMessageQueue $flashMessageQueue;
+
+    protected array $categories = [];
 
     public function __construct(
         protected readonly ModuleTemplateFactory $moduleTemplateFactory,
@@ -1309,10 +1308,10 @@ final class StatisticsController extends MainController
      *
      * @param int $uid Record uid to be link
      *
-     * @return Uri
+     * @return UriInterface
      * @throws RouteNotFoundException If the named route doesn't exist
      */
-    protected function linkDMailRecord(int $uid): Uri
+    protected function linkDMailRecord(int $uid): UriInterface
     {
         return $this->buildUriFromRoute(
             $this->moduleName,

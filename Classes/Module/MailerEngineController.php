@@ -7,23 +7,16 @@ namespace DirectMailTeam\DirectMail\Module;
 use DirectMailTeam\DirectMail\Dmailer;
 use DirectMailTeam\DirectMail\Repository\SysDmailMaillogRepository;
 use DirectMailTeam\DirectMail\Repository\SysDmailRepository;
-use DirectMailTeam\DirectMail\Repository\PagesRepository;
 use DirectMailTeam\DirectMail\Utility\SchedulerUtility;
-use DirectMailTeam\DirectMail\Utility\Typo3ConfVarsUtility;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Backend\Attribute\Controller;
-use TYPO3\CMS\Backend\Routing\UriBuilder;
+use TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Core\Http\HtmlResponse;
-use TYPO3\CMS\Core\Http\Uri;
-use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\Localization\LanguageService;
-use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 use TYPO3\CMS\Core\Pagination\ArrayPaginator;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
@@ -172,7 +165,7 @@ final class MailerEngineController extends MainController
      * Shows the status of the mailer engine.
      * TODO: Should really only show some entries, or provide a browsing interface.
      *
-     * @return	string		List of the mailing status
+     * @return array		List of the mailing status
      * @throws RouteNotFoundException If the named route doesn't exist
      */
     protected function mailerengine(): array

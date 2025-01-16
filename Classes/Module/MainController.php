@@ -7,7 +7,8 @@ namespace DirectMailTeam\DirectMail\Module;
 use DirectMailTeam\DirectMail\Repository\PagesRepository;
 use DirectMailTeam\DirectMail\Utility\TsUtility;
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Backend\Attribute\Controller;
+use Psr\Http\Message\UriInterface;
+use TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
@@ -41,8 +42,6 @@ class MainController
      * @var ModuleTemplate
      */
     protected $moduleTemplate;
-    #protected IconFactory $iconFactory;
-    #protected PageRenderer $pageRenderer;
 
     /**
      * @var StandaloneView
@@ -81,13 +80,9 @@ class MainController
      */
     public function __construct(
         protected readonly ModuleTemplateFactory $moduleTemplateFactory,
-        # $moduleTemplate = null,
         protected readonly IconFactory $iconFactory,
         protected readonly PageRenderer $pageRenderer
     ) {
-        #$this->moduleTemplate = $moduleTemplate ?? GeneralUtility::makeInstance(ModuleTemplate::class);
-        #$this->iconFactory = $iconFactory ?? GeneralUtility::makeInstance(IconFactory::class);
-        #$this->pageRenderer = $pageRenderer ?? GeneralUtility::makeInstance(PageRenderer::class);
         $this->getLanguageService()->includeLLFile('EXT:direct_mail/Resources/Private/Language/locallang_mod2-6.xlf');
         $this->getLanguageService()->includeLLFile('EXT:direct_mail/Resources/Private/Language/locallang_csh_sysdmail.xlf');
     }
@@ -229,7 +224,13 @@ class MainController
         return GeneralUtility::makeInstance(DataHandler::class);
     }
 
-    protected function buildUriFromRoute(string $name, array $parameters = []): Uri
+    /**
+     * @param string $name
+     * @param array $parameters
+     * @return UriInterface
+     * @throws RouteNotFoundException
+     */
+    protected function buildUriFromRoute(string $name, array $parameters = []): UriInterface
     {
         /** @var UriBuilder $uriBuilder */
         $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
@@ -315,7 +316,7 @@ class MainController
      *
      * @return	array		list of record
      */
-    protected function getRecordList(array $listArr, string $table)
+    protected function getRecordList(array $listArr, string $table): array
     {
         $lang = $this->getLanguageService();
         $lllFile = 'LLL:EXT:direct_mail/Resources/Private/Language/locallang_mod2-6.xlf';
@@ -375,7 +376,7 @@ class MainController
      * generate edit link for records
      * https://docs.typo3.org/m/typo3/reference-coreapi/main/en-us/ApiOverview/Backend/EditLinks.html
      *
-     * @param $params
+     * @param array $params
      * @return Uri
      * @throws \TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException
      */
@@ -395,14 +396,13 @@ class MainController
     protected function rearrangePlainMails(array $plainMails): array
     {
         $out = [];
-        if (is_array($plainMails)) {
-            $c = 0;
-            foreach ($plainMails as $v) {
-                $out[$c]['email'] = trim($v);
-                $out[$c]['name'] = '';
-                $c++;
-            }
+        $c = 0;
+        foreach ($plainMails as $v) {
+            $out[$c]['email'] = trim($v);
+            $out[$c]['name'] = '';
+            $c++;
         }
+
         return $out;
     }
 
@@ -413,7 +413,7 @@ class MainController
      *
      * @return array Cleaned array
      */
-    protected function cleanPlainList(array $plainlist)
+    protected function cleanPlainList(array $plainlist): array
     {
         /**
          * $plainlist is a multidimensional array.
@@ -439,7 +439,7 @@ class MainController
      * @param string $perms_clause Select query clause
      * @return array the page ID, recursively
      */
-    protected function getRecursiveSelect($id, $perms_clause)
+    protected function getRecursiveSelect(int $id, string $perms_clause): array
     {
         $getLevels = 10000;
         // Finding tree and offer setting of values recursively.

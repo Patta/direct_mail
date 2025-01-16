@@ -29,6 +29,7 @@ namespace DirectMailTeam\DirectMail\Plugin;
  */
 
 use DirectMailTeam\DirectMail\DirectMailUtility;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Utility\MailUtility;
 use TYPO3\CMS\Frontend\DataProcessing\FilesProcessor;
@@ -105,6 +106,7 @@ class DirectMail
     public $conf = [];
     public $pi_tmpPageId = 0;
     protected $frontendController;
+    protected $request;
     protected $templateService;
 
 
@@ -113,15 +115,17 @@ class DirectMail
     public $siteUrl;
     public $labelsList = 'header_date_prefix,header_link_prefix,uploads_header,media_header,images_header,image_link_prefix,caption_header,unrendered_content,link_prefix';
 
-    public function __construct($_ = null, TypoScriptFrontendController $frontendController = null)
+    public function __construct($_ = null, TypoScriptFrontendController $frontendController = null, ServerRequestInterface $request = null)
     {
+        $this->request = $request ?: $GLOBALS['TYPO3_REQUEST'];
         $this->frontendController = $frontendController ?: $GLOBALS['TSFE'];
         $this->templateService = GeneralUtility::makeInstance(MarkerBasedTemplateService::class);
         // Setting piVars:
         if ($this->prefixId) {
             $this->piVars = self::getRequestPostOverGetParameterWithPrefix($this->prefixId);
         }
-        $this->LLkey = $this->frontendController->getLanguage()->getTypo3Language();
+        $language = $this->request->getAttribute('language') ?? $this->request->getAttribute('site')->getDefaultLanguage();
+        $this->LLkey = $language->getTypo3Language();
 
         $locales = GeneralUtility::makeInstance(Locales::class);
         if ($locales->isValidLanguageKey($this->LLkey)) {

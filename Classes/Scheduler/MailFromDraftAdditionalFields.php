@@ -22,6 +22,7 @@ use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Scheduler\AbstractAdditionalFieldProvider;
 use TYPO3\CMS\Scheduler\Controller\SchedulerModuleController;
+use TYPO3\CMS\Scheduler\SchedulerManagementAction;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
 
 /**
@@ -53,7 +54,7 @@ class MailFromDraftAdditionalFields extends AbstractAdditionalFieldProvider
         if (empty($taskInfo['selecteddraft'])) {
             // In case of edit, and editing a test task, set to internal value if not data was submitted already
             // Otherwise set an empty value, as it will not be used anyway
-            $taskInfo['selecteddraft'] = ($schedulerModuleController->getCurrentAction() === 'edit') ? $task->draftUid : '';
+            $taskInfo['selecteddraft'] = ($schedulerModuleController->getCurrentAction() === SchedulerManagementAction::EDIT) ? $task->draftUid : '';
         }
 
         // fetch all available drafts
@@ -79,7 +80,7 @@ class MailFromDraftAdditionalFields extends AbstractAdditionalFieldProvider
         } else {
             foreach ($drafts as $draft) {
                 // see #44577
-                $selected = (((string)$schedulerModuleController->getCurrentAction() === 'edit' && $task->draftUid === $draft['uid']) ? ' selected="selected"' : '');
+                $selected = (($schedulerModuleController->getCurrentAction() === SchedulerManagementAction::EDIT && $task->draftUid === $draft['uid']) ? ' selected="selected"' : '');
                 $fieldHtml .= '<option value="' . $draft['uid'] . '"' . $selected . '>' . $draft['subject'] . ' [' . $draft['uid'] . ']</option>';
             }
         }

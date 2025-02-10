@@ -62,7 +62,9 @@ class DmCsvUtility
             $fieldOrder = [];
 
             foreach ($first as $v) {
-                list($fName, $fConf) = preg_split('|[\[\]]|', $v);
+                $parts = preg_split('|[\[\]]|', $v);
+                $fName = $parts[0] ?? '';
+                $fConf = $parts[1] ?? '';
                 $fName = trim($fName);
                 $fConf = trim($fConf);
                 $fieldOrder[] = [$fName, $fConf];
@@ -92,8 +94,8 @@ class DmCsvUtility
                 if (count($data) > 1 || $data[0]) {
                     // Traverse fieldOrder and map values over
                     foreach ($fieldOrder as $kk => $fN) {
-                        if ($fN[0]) {
-                            if ($fN[1]) {
+                        if (isset($fN[0])) {
+                            if (isset($fN[1])) {
                                 // If is true
                                 if (trim($data[$kk])) {
                                     if (substr($fN[1], 0, 1) == '=') {

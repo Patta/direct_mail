@@ -404,7 +404,7 @@ class Dmailer implements LoggerAwareInterface
             // Plain
             $this->theParts['plain']['content'] = '';
             if ($this->flagPlain) {
-                $tempContentPlain = $this->getBoundaryParts($this->dmailer['boundaryParts_plain'], $recipientRow['sys_dmail_categories_list']);
+                $tempContentPlain = $this->getBoundaryParts($this->dmailer['boundaryParts_plain'], $recipientRow['sys_dmail_categories_list'] ?? '');
                 if ($this->mailHasContent) {
                     $tempContentPlain = $this->replaceMailMarkers($tempContentPlain, $recipientRow, $additionalMarkers);
                     if (trim($this->dmailer['sys_dmail_rec']['use_rdct']) || trim($this->dmailer['sys_dmail_rec']['long_link_mode'])) {

@@ -1653,11 +1653,11 @@ final class StatisticsController extends MainController
 
         }
 
-        if ($this->implodedParams['showContentTitle'] == 1) {
+        if (isset($this->implodedParams['showContentTitle']) && $this->implodedParams['showContentTitle'] == 1) {
             $label = $contentTitle;
         }
 
-        if ($this->implodedParams['prependContentTitle'] == 1) {
+        if (isset($this->implodedParams['prependContentTitle']) && $this->implodedParams['prependContentTitle'] == 1) {
             $label =  $contentTitle . ' (' . $linkedWord . ')';
         }
 

@@ -30,7 +30,10 @@ use TYPO3\CMS\Core\Resource\FileRepository;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
+use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
+use TYPO3\CMS\Core\Http\ServerRequestFactory;
+use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 
 /**
  * Static class.
@@ -96,6 +99,22 @@ class DirectMailUtility
     ): string {
         $typolinkPageUrl = 't3://page?uid=';
         $cObj = GeneralUtility::makeInstance(ContentObjectRenderer::class);
+
+        // Ensure a PSR-7 request is available for ContentObjectRenderer when running in CLI/Scheduler
+        if (!empty($GLOBALS['TYPO3_REQUEST'])) {
+            $cObj->setRequest($GLOBALS['TYPO3_REQUEST']);
+        } else {
+            try {
+                $requestFactory = GeneralUtility::makeInstance(ServerRequestFactory::class);
+                $request = $requestFactory->fromGlobals();
+                // Provide applicationType so ApplicationType::fromRequest() can detect BE/FE
+                $request = $request->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE);
+                $GLOBALS['TYPO3_REQUEST'] = $request;
+                $cObj->setRequest($request);
+            } catch (\Throwable $e) {
+                // ignore: if we cannot create a request, typolink may still fail later
+            }
+        }
 
         return $cObj->typolink_URL([
             'parameter' => $typolinkPageUrl . $parameter,
@@ -301,7 +320,8 @@ class DirectMailUtility
     public static function getFullUrlsForDirectMailRecord(array $row): array
     {
         // Finding the domain to use
-        if (!$_SERVER['HTTP_HOST']) {
+        // Use empty() to avoid "Undefined array key" when running in CLI/Scheduler
+        if (empty($_SERVER['HTTP_HOST'])) {
             // In CLI / Scheduler context, $_SERVER['HTTP_HOST'] can be null
             $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
             $site = $siteFinder->getSiteByPageId((int)$row['page']);

@@ -13,7 +13,7 @@ $EM_CONF[$_EXTKEY] = [
         'depends' => [
             'typo3' => '13.4.0-13.4.99',
             'lowlevel' => '13.4.0-13.99.99',
-            'tt_address' => '9.0.0-9.0.99',
+            'tt_address' => '9.0.0-10.0.99',
             'php' => '8.2.0-8.4.99',
         ],
         'conflicts' => [

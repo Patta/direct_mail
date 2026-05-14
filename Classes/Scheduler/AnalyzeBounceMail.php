@@ -2,32 +2,121 @@
 
 namespace DirectMailTeam\DirectMail\Scheduler;
 
-/*
- * This file is part of the TYPO3 CMS project.
- *
- * It is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, either version 2
- * of the License, or any later version.
- *
- * For the full copyright and license information, please read the
- * LICENSE.txt file that was distributed with this source code.
- *
- * The TYPO3 project - inspiring people to share!
- */
-
 use DirectMailTeam\DirectMail\Repository\SysDmailMaillogRepository;
 use DirectMailTeam\DirectMail\Utility\ReadmailUtility;
-use Fetch\Message;
-use Fetch\Server;
 use TYPO3\CMS\Core\Context\Context;
-use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
 
 /**
- * Class AnalyzeBounceMail
- * @author Ivan Kartolo <ivan.kartolo@gmail.com>
+ * Minimal wrapper to replace Fetch\Message so processBounceMail() stays untouched.
+ */
+class ImapMessage
+{
+    private $stream;
+    private int $msgNo;
+
+    public function __construct($stream, int $msgNo)
+    {
+        $this->stream = $stream;
+        $this->msgNo  = $msgNo;
+    }
+
+    public function getSubject(): string
+    {
+        $header = imap_headerinfo($this->stream, $this->msgNo);
+        return isset($header->subject) ? imap_utf8($header->subject) : '';
+    }
+
+    public function getMessageBody(): string
+    {
+        $structure = imap_fetchstructure($this->stream, $this->msgNo);
+        if ($structure === false) {
+            return '';
+        }
+
+        if (!isset($structure->parts)) {
+            $body = imap_fetchbody($this->stream, $this->msgNo, '1');
+            return $this->decodeData($body, $structure->encoding);
+        }
+
+        foreach ($structure->parts as $index => $part) {
+            $subtype = strtolower($part->subtype ?? '');
+            if ($part->type === 0 && in_array($subtype, ['plain', 'html'])) {
+                $body = imap_fetchbody($this->stream, $this->msgNo, (string)($index + 1));
+                return $this->decodeData($body, $part->encoding);
+            }
+        }
+
+        return imap_body($this->stream, $this->msgNo);
+    }
+
+    public function getAttachments(): ?array
+    {
+        $attachments = [];
+        $structure   = imap_fetchstructure($this->stream, $this->msgNo);
+
+        if ($structure === false || !isset($structure->parts)) {
+            return null;
+        }
+
+        foreach ($structure->parts as $partNo => $part) {
+            if ($part->ifdisposition && strtolower($part->disposition) === 'attachment') {
+                $data = imap_fetchbody($this->stream, $this->msgNo, (string)($partNo + 1));
+                if ($data === false) {
+                    continue;
+                }
+                $attachments[] = new ImapAttachment($this->decodeData($data, $part->encoding));
+            }
+        }
+
+        return empty($attachments) ? null : $attachments;
+    }
+
+    public function delete(): void
+    {
+        imap_delete($this->stream, (string)$this->msgNo);
+    }
+
+    public function setFlag(string $flag): void
+    {
+        imap_setflag_full($this->stream, (string)$this->msgNo, '\\' . $flag);
+    }
+
+    private function decodeData($data, int $encoding): string
+    {
+        if (!is_string($data)) {
+            return '';
+        }
+
+        return match ($encoding) {
+            3 => base64_decode($data),
+            4 => quoted_printable_decode($data),
+            default => $data,
+        };
+    }
+}
+
+/**
+ * Minimal attachment wrapper to replace Fetch\Attachment.
+ */
+class ImapAttachment
+{
+    private string $data;
+
+    public function __construct(string $data)
+    {
+        $this->data = $data;
+    }
+
+    public function getData(): string
+    {
+        return $this->data;
+    }
+}
+
+/**
  * @deprecated will be removed in TYPO3 v12.0. Use AnalyzeBounceMailCommand instead.
  */
 class AnalyzeBounceMail extends AbstractTask
@@ -68,238 +157,143 @@ class AnalyzeBounceMail extends AbstractTask
      */
     protected $maxProcessed;
 
-    /**
-     * @return int
-     */
-    public function getPort()
-    {
-        return $this->port;
-    }
+    public function getPort(): int { return $this->port; }
+    public function setPort($port): void { $this->port = $port; }
+    public function getUser(): string { return $this->user; }
+    public function setUser($user): void { $this->user = $user; }
+    public function getPassword(): string { return $this->password; }
+    public function setPassword($password): void { $this->password = $password; }
+    public function getService(): string { return $this->service; }
+    public function setService($service): void { $this->service = $service; }
+    public function getServer() { return $this->server; }
+    public function setServer($server): void { $this->server = $server; }
+    public function getMaxProcessed() { return $this->maxProcessed; }
+    public function setMaxProcessed($maxProcessed): void { $this->maxProcessed = (int)$maxProcessed; }
 
     /**
-     * @param int $port
-     */
-    public function setPort($port): void
-    {
-        $this->port = $port;
-    }
-
-    /**
-     * @return string
-     */
-    public function getUser()
-    {
-        return $this->user;
-    }
-
-    /**
-     * @param string $user
-     */
-    public function setUser($user): void
-    {
-        $this->user = $user;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPassword()
-    {
-        return $this->password;
-    }
-
-    /**
-     * @param string $password
-     */
-    public function setPassword($password): void
-    {
-        $this->password = $password;
-    }
-
-    /**
-     * @return string
-     */
-    public function getService()
-    {
-        return $this->service;
-    }
-
-    /**
-     * @param string $service
-     */
-    public function setService($service): void
-    {
-        $this->service = $service;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getServer()
-    {
-        return $this->server;
-    }
-
-    /**
-     * @param mixed $server
-     */
-    public function setServer($server): void
-    {
-        $this->server = $server;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getMaxProcessed()
-    {
-        return $this->maxProcessed;
-    }
-
-    /**
-     * @param mixed $maxProcessed
-     */
-    public function setMaxProcessed($maxProcessed): void
-    {
-        $this->maxProcessed = (int)$maxProcessed;
-    }
-
-    /**
-     * execute the scheduler task.
-     *
+     * Execute the scheduler task.
      * @return bool
      */
-    public function execute()
+    public function execute(): bool
     {
         trigger_error(
             'will be removed in TYPO3 v12.0. Use AnalyzeBounceMailCommand instead.',
             E_USER_DEPRECATED
         );
-        // try connect to mail server
-        $mailServer = $this->connectMailServer();
-        if ($mailServer instanceof Server) {
-            // we are connected to mail server
-            // get unread mails
-            $messages = $mailServer->search('UNSEEN', $this->maxProcessed);
-            /** @var Message $message The message object */
-            foreach ($messages as $message) {
-                // process the mail
+
+        $stream = $this->connectMailServer();
+        if ($stream === false) {
+            return false;
+        }
+
+        $unseenMsgNos = imap_search($stream, 'UNSEEN');
+        if ($unseenMsgNos !== false) {
+            if ($this->maxProcessed > 0) {
+                $unseenMsgNos = array_slice($unseenMsgNos, 0, $this->maxProcessed);
+            }
+            foreach ($unseenMsgNos as $msgNo) {
+                $message = new ImapMessage($stream, $msgNo);
                 if ($this->processBounceMail($message)) {
-                    // set delete
                     $message->delete();
                 } else {
                     $message->setFlag('SEEN');
                 }
             }
-
-            // expunge to delete permanently
-            $mailServer->expunge();
-            imap_close($mailServer->getImapStream());
-            return true;
         }
-        return false;
+
+        imap_expunge($stream);
+        imap_close($stream);
+
+        return true;
     }
 
     /**
      * Process the bounce mail
-     * @param Message $message the message object
+     * @param ImapMessage $message
      * @return bool true if bounce mail can be parsed, else false
      */
-    private function processBounceMail($message)
+    private function processBounceMail($message): bool
     {
         /** @var ReadmailUtility $readMail */
         $readMail = GeneralUtility::makeInstance(ReadmailUtility::class);
 
-        // get attachment
         $attachmentArray = $message->getAttachments();
-        $midArray = [];
+        $midArray        = [];
+
         if (is_array($attachmentArray)) {
-            // search in attachment
             foreach ($attachmentArray as $v => $attachment) {
                 $bouncedMail = $attachment->getData();
-                // Find mail id
-                $midArray = $readMail->find_XTypo3MID($bouncedMail);
+                $midArray    = $readMail->find_XTypo3MID($bouncedMail);
                 if (empty($midArray) === false) {
-                    // if mid, rid and rtbl are found, then stop looping
                     break;
                 }
             }
         } else {
-            // search in MessageBody (see rfc822-headers as Attachments placed )
             $midArray = $readMail->find_XTypo3MID($message->getMessageBody());
         }
 
         if (empty($midArray)) {
-            // no mid, rid and rtbl found - exit
             return false;
         }
 
-        // Extract text content
         $cp = $readMail->analyseReturnError($message->getMessageBody());
 
-        $row = GeneralUtility::makeInstance(SysDmailMaillogRepository::class)->selectForAnalyzeBounceMail($midArray['rid'], $midArray['rtbl'], $midArray['mid']);
+        $row = GeneralUtility::makeInstance(SysDmailMaillogRepository::class)
+            ->selectForAnalyzeBounceMail($midArray['rid'], $midArray['rtbl'], $midArray['mid']);
 
-        // only write to log table, if we found a corresponding recipient record
         if (!empty($row)) {
-            /** @var Connection $connection */
-            $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable('sys_dmail_maillog');
+            /** @var \TYPO3\CMS\Core\Database\Connection $connection */
+            $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+                ->getConnectionForTable('sys_dmail_maillog');
             try {
                 $midArray['email'] = $row['email'];
                 $insertFields = [
-                    'tstamp' => $this->getEXEC_TIME(),
-                    'response_type' => -127,
-                    'mid' => (int)$midArray['mid'],
-                    'rid' => (int)$midArray['rid'],
-                    'email' => $midArray['email'],
-                    'rtbl' => $midArray['rtbl'],
-                    'return_content' => serialize($cp),
-                    'return_code' => (int)$cp['reason'],
+                    'tstamp'          => $this->getEXEC_TIME(),
+                    'response_type'   => -127,
+                    'mid'             => (int)$midArray['mid'],
+                    'rid'             => (int)$midArray['rid'],
+                    'email'           => $midArray['email'],
+                    'rtbl'            => $midArray['rtbl'],
+                    'return_content'  => serialize($cp),
+                    'return_code'     => (int)$cp['reason'],
                 ];
                 $connection->insert('sys_dmail_maillog', $insertFields);
                 $sql_insert_id = $connection->lastInsertId();
                 return (bool)$sql_insert_id;
             } catch (\Doctrine\DBAL\DBALException $e) {
-                // Log $e->getMessage();
                 return false;
             }
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
-     * Create connection to mail server.
-     * Return mailServer object or false on error
+     * Create connection to mail server via native imap_open().
+     * Returns IMAP stream or false on error.
      *
-     * @return bool|Server
+     * @return resource|false
      */
     private function connectMailServer()
     {
-        // check if we can connect using the given data
-        /** @var Server $mailServer */
-        $mailServer = GeneralUtility::makeInstance(
-            Server::class,
-            $this->server,
-            (int)$this->port,
-            $this->service
-        );
+        $mailbox = '{' . $this->server . ':' . (int)$this->port . '/' . $this->service . '/ssl}INBOX';
+        $stream  = @imap_open($mailbox, $this->user, $this->password, 0, 1);
 
-        // set mail username and password
-        $mailServer->setAuthentication($this->user, $this->password);
-
-        try {
-            $imapStream = $mailServer->getImapStream();
-            return $mailServer;
-        } catch (\Exception $e) {
+        if ($stream === false) {
+            $errors = imap_errors();
+            $errorMsg = is_array($errors) ? implode(', ', $errors) : 'Unknown IMAP error';
+            // log silently – original code also returned false without logging here
+            error_log('DirectMail AnalyzeBounceMail: IMAP connection failed: ' . $errorMsg);
             return false;
         }
+
+        return $stream;
     }
 
     /**
-     * https://docs.typo3.org/m/typo3/reference-coreapi/main/en-us/ApiOverview/Context/Index.html#example
-     * @TODO
+     * @return int
      */
-    private function getEXEC_TIME()
+    private function getEXEC_TIME(): int
     {
         return GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('date', 'timestamp');
     }

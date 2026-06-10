@@ -8,6 +8,8 @@ use DirectMailTeam\DirectMail\Dmailer;
 use DirectMailTeam\DirectMail\Repository\SysDmailMaillogRepository;
 use DirectMailTeam\DirectMail\Repository\SysDmailRepository;
 use DirectMailTeam\DirectMail\Utility\SchedulerUtility;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException;
@@ -21,8 +23,7 @@ use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 use TYPO3\CMS\Core\Pagination\ArrayPaginator;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+
 
 final class MailerEngineController extends MainController
 {
@@ -154,9 +155,9 @@ final class MailerEngineController extends MainController
 
     protected function getSchedulerTable(): array
     {
-        $schedulerTable = ['taskGroupsWithTasks' => [], 'errorClasses' => []];
+        $schedulerTable = [];
         if (ExtensionManagementUtility::isLoaded('scheduler')) {
-            $schedulerTable = SchedulerUtility::getDMTable();
+            $schedulerTable = GeneralUtility::makeInstance(SchedulerUtility::class)->getDMTable();
         }
         return $schedulerTable;
     }

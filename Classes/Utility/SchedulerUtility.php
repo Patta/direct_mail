@@ -12,6 +12,8 @@ namespace DirectMailTeam\DirectMail\Utility;
 
 use DirectMailTeam\DirectMail\Repository\TempRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Scheduler\Exception\InvalidTaskException;
+use TYPO3\CMS\Scheduler\ProgressProviderInterface;
 use TYPO3\CMS\Scheduler\Service\TaskService;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
 use TYPO3\CMS\Scheduler\Task\TaskSerializer;
@@ -19,15 +21,20 @@ use TYPO3\CMS\Scheduler\Validation\Validator\TaskValidator;
 
 class SchedulerUtility
 {
-    protected static function isValidTaskObject($task): bool
+    public function __construct(
+        protected readonly TaskSerializer $taskSerializer,
+        protected readonly TaskService $taskService,
+    ) {
+    }
+
+    protected function isValidTaskObject($task): bool
     {
         return (new TaskValidator())->isValid($task);
     }
 
-    public static function getDMTable(): array
+    public function getDMTable(): array
     {
-        $taskSerializer = GeneralUtility::makeInstance(TaskSerializer::class);
-        $registeredClasses = GeneralUtility::makeInstance(TaskService::class)->getAvailableTaskTypes();
+        $registeredClasses = $this->taskService->getAvailableTaskTypes();
 
         $tasks = GeneralUtility::makeInstance(TempRepository::class)->getDMTasks();
 
@@ -45,18 +52,18 @@ class SchedulerUtility
                 ];
 
                 try {
-                    $taskObject = $taskSerializer->deserialize($task['serialized_task_object']);
+                    $taskObject = $this->taskSerializer->deserialize($task['serialized_task_object']);
                 } catch (InvalidTaskException $e) {
                     $taskData['errorMessage'] = $e->getMessage();
-                    $taskData['class'] = $taskSerializer->extractClassName($task['serialized_task_object']);
+                    $taskData['class'] = $this->taskSerializer->extractClassName($task['serialized_task_object']);
                     $errorClasses[] = $taskData;
                     continue;
                 }
 
-                $taskClass = $taskSerializer->resolveClassName($taskObject);
+                $taskClass = $this->taskSerializer->resolveClassName($taskObject);
                 $taskData['class'] = $taskClass;
 
-                if (!self::isValidTaskObject($taskObject)) {
+                if (!$this->isValidTaskObject($taskObject)) {
                     $taskData['errorMessage'] = 'The class ' . $taskClass . ' is not a valid task';
                     $errorClasses[] = $taskData;
                     continue;
@@ -72,15 +79,6 @@ class SchedulerUtility
                     $taskData['progress'] = round((float)$taskObject->getProgress(), 2);
                 }
 
-                if (!isset($registeredClasses[$taskClass])) {
-                    $taskData['errorMessage'] = 'The class ' . $taskClass . ' is not a registered task';
-                    $errorClasses[] = $taskData;
-                    continue;
-                }
-
-                if ($taskObject instanceof ProgressProviderInterface) {
-                    $taskData['progress'] = round((float)$taskObject->getProgress(), 2);
-                }
                 $taskData['classTitle'] = $registeredClasses[$taskClass]['title'];
                 $taskData['classExtension'] = $registeredClasses[$taskClass]['extension'];
                 $taskData['additionalInformation'] = $taskObject->getAdditionalInformation();
@@ -89,17 +87,21 @@ class SchedulerUtility
                 $taskData['nextExecution'] = (int)$task['nextexecution'];
                 $taskData['type'] = 'single';
                 $taskData['frequency'] = '';
+
                 if ($taskObject->getType() === AbstractTask::TYPE_RECURRING) {
                     $taskData['type'] = 'recurring';
                     $taskData['frequency'] = $taskObject->getExecution()->getCronCmd() ?: $taskObject->getExecution()->getInterval();
                 }
+
                 $taskData['multiple'] = (bool)$taskObject->getExecution()->getMultiple();
                 $taskData['lastExecutionFailure'] = false;
+
                 if (!empty($task['lastexecution_failure'])) {
                     $taskData['lastExecutionFailure'] = true;
                     $exceptionArray = @unserialize($task['lastexecution_failure']);
                     $taskData['lastExecutionFailureCode'] = '';
                     $taskData['lastExecutionFailureMessage'] = '';
+
                     if (is_array($exceptionArray)) {
                         $taskData['lastExecutionFailureCode'] = $exceptionArray['code'];
                         $taskData['lastExecutionFailureMessage'] = $exceptionArray['message'];
@@ -108,6 +110,7 @@ class SchedulerUtility
 
                 // If a group is deleted or no group is set it needs to go into "not assigned groups"
                 $groupIndex = $task['isTaskGroupDeleted'] === 1 || $task['isTaskGroupDeleted'] === null ? 0 : (int)$task['task_group'];
+
                 if (!isset($taskGroupsWithTasks[$groupIndex])) {
                     $taskGroupsWithTasks[$groupIndex] = [
                         'tasks' => [],
@@ -117,6 +120,7 @@ class SchedulerUtility
                         'groupHidden' => $task['isTaskGroupHidden'],
                     ];
                 }
+
                 $taskGroupsWithTasks[$groupIndex]['tasks'][] = $taskData;
             }
         }

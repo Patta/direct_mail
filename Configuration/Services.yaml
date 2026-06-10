@@ -7,6 +7,9 @@ services:
   DirectMailTeam\DirectMail\:
     resource: '../Classes/*'
 
+  DirectMailTeam\DirectMail\Utility\SchedulerUtility:
+    public: true
+
   DirectMailTeam\DirectMail\Module\ConfigurationController:
     tags: ['backend.controller']
   DirectMailTeam\DirectMail\Module\DmailController:

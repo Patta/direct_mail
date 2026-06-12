@@ -61,25 +61,11 @@ defined('TYPO3') || die();
     /**
      * Registering class to scheduler
      */
-    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks']['DirectMailTeam\\DirectMail\\Scheduler\\DirectmailScheduler'] = [
-        'extension' => 'direct_mail',
-        'title' => 'Direct Mail: Mailing Queue',
-        'description' => 'This task invokes dmailer in order to process queued messages.',
-    ];
-
     $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks']['DirectMailTeam\\DirectMail\\Scheduler\\MailFromDraft'] = [
         'extension'            => 'direct_mail',
         'title'                => 'Direct Mail: Create Mail from Draft',
         'description'        => 'This task allows you to select a DirectMail draft that gets copied and then sent to the. This allows automatic (periodic) sending of the same TYPO3 page.',
         'additionalFields'    => 'DirectMailTeam\\DirectMail\\Scheduler\\MailFromDraftAdditionalFields',
-    ];
-
-    // bounce mail per scheduler
-    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks']['DirectMailTeam\\DirectMail\\Scheduler\\AnalyzeBounceMail'] = [
-        'extension' => 'direct_mail',
-        'title' => 'Direct Mail: Analyze bounce mail',
-        'description' => 'This task will get bounce mail from the configured mailbox',
-        'additionalFields' => 'DirectMailTeam\\DirectMail\\Scheduler\\AnalyzeBounceMailAdditionalFields',
     ];
 
     // https://docs.typo3.org/c/typo3/cms-core/main/en-us/Changelog/12.3/Feature-100232-LoadAdditionalStylesheetsInTYPO3Backend.html

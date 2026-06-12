@@ -92,7 +92,7 @@ class ReadmailUtility
         if (strstr($content, 'X-TYPO3MID:')) {
             $p = explode('X-TYPO3MID:', $content, 2);
             $l = explode(LF, $p[1], 2);
-            list($mid, $hash) = GeneralUtility::trimExplode('-', $l[0]);
+            [$mid, $hash] = GeneralUtility::trimExplode('-', $l[0]);
             if (md5($mid) == $hash) {
                 $moreParts = explode('_', substr($mid, 3));
                 $out = [
@@ -226,7 +226,7 @@ class ReadmailUtility
             }
             $cp['content'] = trim($parts[0]);
             $parts = explode('>:', $cp['content'], 2);
-            $cp['reason_text'] = trim($parts[1])?trim($parts[1]):$cp['content'];
+            $cp['reason_text'] = trim($parts[1]) ? trim($parts[1]) : $cp['content'];
             $cp['mailserver'] = 'Qmail';
             $cp['reason'] = $this->extractReason($cp['reason_text']);
         } elseif (strstr($c, 'The Postfix program')) {
@@ -306,7 +306,7 @@ class ReadmailUtility
     {
         $parts = explode('=?', $str, 2);
         if (count($parts) == 2) {
-            list($charset, $encType, $encContent) = explode('?', $parts[1], 3);
+            [$charset, $encType, $encContent] = explode('?', $parts[1], 3);
             $subparts = explode('?=', $encContent, 2);
             $encContent = $subparts[0];
             switch (strtolower($encType)) {
@@ -345,7 +345,7 @@ class ReadmailUtility
         } elseif ($reg[1] && GeneralUtility::validEmail($reg[1])) {
             $outArr['email'] = $reg[1];
             // Find name:
-            list($namePart) = explode($reg[0], $str);
+            [$namePart] = explode($reg[0], $str);
             if (trim($namePart)) {
                 $reg = '';
                 preg_match('/"([^"]*)"/', $str, $reg);
@@ -376,7 +376,7 @@ class ReadmailUtility
         $outValue['_MIME_TYPE'] = $cTypeParts[0];
         reset($cTypeParts);
         next($cTypeParts);
-        while (list(, $v) = each($cTypeParts)) {
+        while ([, $v] = each($cTypeParts)) {
             $reg = '';
             preg_match('/([^=]*)="(.*)"/i', $v, $reg);
             if (trim($reg[1]) && trim($reg[2])) {

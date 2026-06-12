@@ -210,7 +210,7 @@ class TtAddressRepository extends MainRepository
         return 0;
     }
 
-        /**
+    /**
      * Return all uid's from 'tt_address' for a static direct mail group.
      *
      * @param int $uid The uid of the direct_mail group

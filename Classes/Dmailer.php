@@ -28,7 +28,6 @@ use TYPO3\CMS\Core\Charset\CharsetConverter;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Mail\MailMessage;
-use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Service\MarkerBasedTemplateService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -325,7 +324,7 @@ class Dmailer implements LoggerAwareInterface
     {
         // Hook allows to manipulate the markers to add salutation etc.
         if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/direct_mail']['res/scripts/class.dmailer.php']['mailMarkersHook'])) {
-            $mailMarkersHook =& $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/direct_mail']['res/scripts/class.dmailer.php']['mailMarkersHook'];
+            $mailMarkersHook = & $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/direct_mail']['res/scripts/class.dmailer.php']['mailMarkersHook'];
             if (is_array($mailMarkersHook)) {
                 $hookParameters = [
                     'row'     => &$recipRow,
@@ -355,7 +354,7 @@ class Dmailer implements LoggerAwareInterface
     public function sendAdvanced(array $recipientRow, string $tableNameChar): int
     {
         $returnCode = 0;
-        foreach($recipientRow as $key => $val) {
+        foreach ($recipientRow as $key => $val) {
             $recipientRow[$key] = is_null($val) ? $val : htmlspecialchars($val);
         }
 
@@ -373,7 +372,7 @@ class Dmailer implements LoggerAwareInterface
                 // Put in the uid of the mail-record
                 '###SYS_MAIL_ID###'         => $this->dmailer['sys_dmail_uid'],
                 '###SYS_AUTHCODE###'        => AuthCodeUtility::getHmac($recipientRow, $this->authCodeFieldList),
-                 // Put in the unique message id in HTML-code
+                // Put in the unique message id in HTML-code
                 $this->dmailer['messageID'] => md5(microtime()) . '_' . $midRidId,
             ];
             $rowFieldsArray = Typo3ConfVarsUtility::getDMConfigMergedFields();
@@ -391,7 +390,7 @@ class Dmailer implements LoggerAwareInterface
 
             $this->theParts['html']['content'] = '';
             if ($this->flagHtml && (($recipientRow['module_sys_dmail_html'] ?? false) || $tableNameChar == 'P')) {
-                if(!isset($recipientRow['sys_dmail_categories_list'])){
+                if (!isset($recipientRow['sys_dmail_categories_list'])) {
                     $recipientRow['sys_dmail_categories_list'] = '';
                 }
                 $tempContentHTML = $this->getBoundaryParts($this->dmailer['boundaryParts_html'], $recipientRow['sys_dmail_categories_list']);
@@ -654,7 +653,7 @@ class Dmailer implements LoggerAwareInterface
                     'logUid' => $logUid,
                     'html_sent' => (int)$this->sendAdvanced($recipRow, $tableKey),
                     'parsetime' => $this->getMilliseconds() - $parseTimeStart,
-                    'size' => strlen($this->message)
+                    'size' => strlen($this->message),
                 ];
                 $ok = $sysDmailMaillogRepository->updateSysDmailMaillogForShipOfMail($values);
 
@@ -775,7 +774,7 @@ class Dmailer implements LoggerAwareInterface
             if (!$row['scheduled_begin']) {
                 // Hook to alter the list of recipients
                 if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/direct_mail']['res/scripts/class.dmailer.php']['queryInfoHook'])) {
-                    $queryInfoHook =& $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/direct_mail']['res/scripts/class.dmailer.php']['queryInfoHook'];
+                    $queryInfoHook = & $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/direct_mail']['res/scripts/class.dmailer.php']['queryInfoHook'];
                     if (is_array($queryInfoHook)) {
                         $hookParameters = [
                             'row'    => $row,
@@ -914,7 +913,7 @@ class Dmailer implements LoggerAwareInterface
 
         // Hook to edit or add the mail headers
         if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/direct_mail']['res/scripts/class.dmailer.php']['mailHeadersHook'])) {
-            $mailHeadersHook =& $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/direct_mail']['res/scripts/class.dmailer.php']['mailHeadersHook'];
+            $mailHeadersHook = & $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/direct_mail']['res/scripts/class.dmailer.php']['mailHeadersHook'];
             if (is_array($mailHeadersHook)) {
                 $hookParameters = [
                     'row'    => &$recipientRow,
@@ -1063,7 +1062,7 @@ class Dmailer implements LoggerAwareInterface
             '/http[s]?:\/\/\S+/',
             function ($urlMatches) use (&$jumpUrlCounter) {
                 $url = $urlMatches[0];
-                if (strpos($url, '&no_jumpurl=1') !== false) {
+                if (str_contains($url, '&no_jumpurl=1')) {
                     // A link parameter "&no_jumpurl=1" allows to disable jumpurl for plain text links
                     $url = str_replace('&no_jumpurl=1', '', $url);
                 } elseif ($this->jumperURLUseId) {

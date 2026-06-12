@@ -604,7 +604,7 @@ class SysDmailMaillogRepository extends MainRepository
                 ),
                 $queryBuilder->expr()->gte(
                     'tstamp',
-                    $queryBuilder->createNamedParameter($mailLogParameters['tstamp']-10, Connection::PARAM_INT)
+                    $queryBuilder->createNamedParameter($mailLogParameters['tstamp'] - 10, Connection::PARAM_INT)
                 )
             );
 

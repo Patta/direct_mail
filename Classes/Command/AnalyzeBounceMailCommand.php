@@ -142,12 +142,12 @@ class AnalyzeBounceMailCommand extends Command
     public function configure(): void
     {
         $this->setDescription('This command will get bounce mail from the configured mailbox')
-            ->addOption('server',   's',  InputOption::VALUE_REQUIRED, 'Server URL/IP')
-            ->addOption('port',     'p',  InputOption::VALUE_REQUIRED, 'Port number')
-            ->addOption('user',     'u',  InputOption::VALUE_REQUIRED, 'Username')
+            ->addOption('server', 's', InputOption::VALUE_REQUIRED, 'Server URL/IP')
+            ->addOption('port', 'p', InputOption::VALUE_REQUIRED, 'Port number')
+            ->addOption('user', 'u', InputOption::VALUE_REQUIRED, 'Username')
             ->addOption('password', 'pw', InputOption::VALUE_REQUIRED, 'Password')
-            ->addOption('type',     't',  InputOption::VALUE_REQUIRED, 'Type of mailserver (imap or pop3)')
-            ->addOption('count',    'c',  InputOption::VALUE_REQUIRED, 'Number of bounce mail to be processed');
+            ->addOption('type', 't', InputOption::VALUE_REQUIRED, 'Type of mailserver (imap or pop3)')
+            ->addOption('count', 'c', InputOption::VALUE_REQUIRED, 'Number of bounce mail to be processed');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -168,10 +168,18 @@ class AnalyzeBounceMailCommand extends Command
             return Command::FAILURE;
         }
 
-        if ($input->getOption('server'))   { $server   = $input->getOption('server'); }
-        if ($input->getOption('port'))     { $port     = (int)$input->getOption('port'); }
-        if ($input->getOption('user'))     { $user     = $input->getOption('user'); }
-        if ($input->getOption('password')) { $password = $input->getOption('password'); }
+        if ($input->getOption('server')) {
+            $server   = $input->getOption('server');
+        }
+        if ($input->getOption('port')) {
+            $port     = (int)$input->getOption('port');
+        }
+        if ($input->getOption('user')) {
+            $user     = $input->getOption('user');
+        }
+        if ($input->getOption('password')) {
+            $password = $input->getOption('password');
+        }
         if ($input->getOption('type')) {
             $type = $input->getOption('type');
             if (!in_array($type, ['imap', 'pop3'])) {
@@ -179,7 +187,9 @@ class AnalyzeBounceMailCommand extends Command
                 return Command::FAILURE;
             }
         }
-        if ($input->getOption('count')) { $count = (int)$input->getOption('count'); }
+        if ($input->getOption('count')) {
+            $count = (int)$input->getOption('count');
+        }
 
         $stream = $this->connectMailServer($server, $port, $type, $user, $password, $io);
         if ($stream === false) {

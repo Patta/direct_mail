@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace DirectMailTeam\DirectMail\Module;
 
-
 use DirectMailTeam\DirectMail\DirectMailUtility;
 use DirectMailTeam\DirectMail\Repository\FeUsersRepository;
 use DirectMailTeam\DirectMail\Repository\SysDmailMaillogRepository;
@@ -18,8 +17,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException;
-use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
+use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Imaging\IconFactory;
@@ -41,55 +40,41 @@ final class StatisticsController extends MainController
     public function __construct(
         protected readonly ModuleTemplateFactory $moduleTemplateFactory,
         protected readonly IconFactory $iconFactory,
-
         protected readonly string $moduleName = 'directmail_module_statistics',
         protected readonly string $lllFile = 'LLL:EXT:direct_mail/Resources/Private/Language/locallang_mod2-6.xlf',
-
         protected ?LanguageService $languageService = null,
-
         protected array $pageinfo = [],
         protected int $id = 0,
         protected int $currentPageNumber = 1,
         protected bool $access = false,
-
         protected string $requestUri = '',
-
         private int $uid = 0,
         private string $table = '',
         private array $tables = ['tt_address', 'fe_users'],
         private bool $recalcCache = false,
         private bool $submit = false,
         private array $indata = [],
-
         private bool $returnList    = false,
         private bool $returnDisable = false,
         private bool $returnCSV     = false,
-
         private bool $unknownList    = false,
         private bool $unknownDisable = false,
         private bool $unknownCSV     = false,
-
         private bool $fullList    = false,
         private bool $fullDisable = false,
         private bool $fullCSV     = false,
-
         private bool $badHostList    = false,
         private bool $badHostDisable = false,
         private bool $badHostCSV     = false,
-
         private bool $badHeaderList    = false,
         private bool $badHeaderDisable = false,
         private bool $badHeaderCSV     = false,
-
         private bool $reasonUnknownList    = false,
         private bool $reasonUnknownDisable = false,
         private bool $reasonUnknownCSV     = false,
-
         protected array $implodedParams = [],
-
         private string $siteUrl = ''
-    ) {
-    }
+    ) {}
 
     public function handleRequest(ServerRequestInterface $request): ResponseInterface
     {
@@ -186,7 +171,7 @@ final class StatisticsController extends MainController
                                 'keyOfFirstPaginatedItem' => $paginator->getKeyOfFirstPaginatedItem(),
                                 'keyOfLastPaginatedItem' => $paginator->getKeyOfLastPaginatedItem(),
                                 'paginatedItems' => $paginator->getPaginatedItems(),
-                                'links' =>  array_fill(0, $paginator->getNumberOfPages(), '')
+                                'links' =>  array_fill(0, $paginator->getNumberOfPages(), ''),
                             ],
                             'id' => $this->id,
                             'moduleName' => $this->moduleName,
@@ -612,8 +597,8 @@ final class StatisticsController extends MainController
                 ],
                 [
                     'stats_links_clicked_per_respondent',
-                    ($uniqueHtmlResponses + $uniquePlainResponses ? number_format((($table['1']['counter'] ?? 0) + ($table['2']['counter'] ?? 0)) / ($uniqueHtmlResponses+$uniquePlainResponses), 2) : '-'),
-                    ($uniqueHtmlResponses  ? number_format(($table['1']['counter']) / ($uniqueHtmlResponses), 2)  : '-'),
+                    ($uniqueHtmlResponses + $uniquePlainResponses ? number_format((($table['1']['counter'] ?? 0) + ($table['2']['counter'] ?? 0)) / ($uniqueHtmlResponses + $uniquePlainResponses), 2) : '-'),
+                    ($uniqueHtmlResponses ? number_format(($table['1']['counter']) / ($uniqueHtmlResponses), 2) : '-'),
                     ($uniquePlainResponses ? number_format(($table['2']['counter']) / ($uniquePlainResponses), 2) : '-'),
                 ],
             ],
@@ -1350,9 +1335,9 @@ final class StatisticsController extends MainController
     {
         $dmailInfo = [];
         $fromInfo = [
-            $this->languageService->sL($this->lllFile . ':view_replyto') => htmlspecialchars($row['replyto_name']). '&lt;' . htmlspecialchars($row['replyto_email']) . '&gt;',
+            $this->languageService->sL($this->lllFile . ':view_replyto') => htmlspecialchars($row['replyto_name']) . '&lt;' . htmlspecialchars($row['replyto_email']) . '&gt;',
             $this->languageService->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang_tca.xlf:sys_dmail.organisation') => htmlspecialchars($row['organisation']),
-            $this->languageService->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang_tca.xlf:sys_dmail.return_path') => htmlspecialchars($row['return_path'])
+            $this->languageService->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang_tca.xlf:sys_dmail.return_path') => htmlspecialchars($row['return_path']),
         ];
         $mailInfo = [
             $this->languageService->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang_tca.xlf:sys_dmail.priority') => BackendUtility::getProcessedValue('sys_dmail', 'priority', $row['priority']),
@@ -1363,7 +1348,7 @@ final class StatisticsController extends MainController
             'plainParams' => '',
             'HTMLParams' => '',
             'page' => '',
-            'title' => ''
+            'title' => '',
 
         ];
 
@@ -1380,7 +1365,7 @@ final class StatisticsController extends MainController
                 DirectMailUtility::fName('plainParams') => htmlspecialchars($row['plainParams']),
                 DirectMailUtility::fName('HTMLParams') => htmlspecialchars($row['HTMLParams']),
                 $this->languageService->sL($this->lllFile . ':view_media') => htmlspecialchars(BackendUtility::getProcessedValue('sys_dmail', 'includeMedia', $row['includeMedia'])),
-                $this->languageService->sL($this->lllFile . ':view_flowed') => htmlspecialchars(BackendUtility::getProcessedValue('sys_dmail', 'flowedFormat', $row['flowedFormat']))
+                $this->languageService->sL($this->lllFile . ':view_flowed') => htmlspecialchars(BackendUtility::getProcessedValue('sys_dmail', 'flowedFormat', $row['flowedFormat'])),
             ];
         }
 
@@ -1419,7 +1404,7 @@ final class StatisticsController extends MainController
     {
         $str = $pieces ? number_format($pieces) : '0';
         if ($total) {
-            $str .= ' / ' . number_format(($pieces/$total*100), 2) . '%';
+            $str .= ' / ' . number_format(($pieces / $total * 100), 2) . '%';
         }
         return $str;
     }
@@ -1460,8 +1445,8 @@ final class StatisticsController extends MainController
                         $recRec['response'][] = $row['tstamp'];
                         break;
                     case '0':
-                        $recRec['recieved_html'] = $row['html_sent']&1;
-                        $recRec['recieved_plain'] = $row['html_sent']&2;
+                        $recRec['recieved_html'] = $row['html_sent'] & 1;
+                        $recRec['recieved_plain'] = $row['html_sent'] & 2;
                         $recRec['size'] = $row['size'];
                         $recRec['tstamp'] = $row['tstamp'];
                         break;
@@ -1554,14 +1539,14 @@ final class StatisticsController extends MainController
                 if ($isInt) {
                     $uid = (int)$m[1];
                 }
-//                @TODO
-//                 else {
-//                     // initialize the page selector
-//                     /** @var PageRepository $sys_page */
-//                     $sys_page = GeneralUtility::makeInstance(PageRepository::class);
-//                     $sys_page->init(true);
-//                     $uid = $sys_page->getPageIdFromAlias($m[1]);
-//                 }
+                //                @TODO
+                //                 else {
+                //                     // initialize the page selector
+                //                     /** @var PageRepository $sys_page */
+                //                     $sys_page = GeneralUtility::makeInstance(PageRepository::class);
+                //                     $sys_page->init(true);
+                //                     $uid = $sys_page->getPageIdFromAlias($m[1]);
+                //                 }
                 $rootLine = BackendUtility::BEgetRootLine($uid);
                 $pages = array_shift($rootLine);
                 // array_shift reverses the array (rootline has numeric index in the wrong order!)
@@ -1570,12 +1555,12 @@ final class StatisticsController extends MainController
                 $urlstr = GeneralUtility::fixed_lgd_cs($pages['title'], 50) . GeneralUtility::fixed_lgd_cs(($query ? ' / ' . $query : ''), 20);
             } else {
                 $urlstr = $baseUrl . substr($urlParts['path'], 1);
-                $urlstr .= ($urlParts['query'] ?? '')    ? '?' . $urlParts['query']    : '';
+                $urlstr .= ($urlParts['query'] ?? '') ? '?' . $urlParts['query'] : '';
                 $urlstr .= ($urlParts['fragment'] ?? '') ? '#' . $urlParts['fragment'] : '';
             }
         } else {
             $urlstr =  ((isset($urlParts['host']) && $urlParts['host']) ? $urlParts['scheme'] . '://' . $urlParts['host'] : $baseUrl) . ($urlParts['path'] ?? '');
-            $urlstr .= ($urlParts['query'] ?? '')    ? '?' . $urlParts['query']    : '';
+            $urlstr .= ($urlParts['query'] ?? '') ? '?' . $urlParts['query'] : '';
             $urlstr .= ($urlParts['fragment'] ?? '') ? '#' . $urlParts['fragment'] : '';
         }
 
@@ -1616,8 +1601,8 @@ final class StatisticsController extends MainController
         string $url,
         string $urlStr,
         bool $forceFetch = false,
-        string $linkedWord = ''): string
-    {
+        string $linkedWord = ''
+    ): string {
         $pathSite = $this->getBaseURL();
         $label = $linkedWord;
         $contentTitle = '';

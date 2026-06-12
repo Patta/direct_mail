@@ -24,8 +24,7 @@ class SchedulerUtility
     public function __construct(
         protected readonly TaskSerializer $taskSerializer,
         protected readonly TaskService $taskService,
-    ) {
-    }
+    ) {}
 
     protected function isValidTaskObject($task): bool
     {

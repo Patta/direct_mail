@@ -17,7 +17,6 @@ namespace DirectMailTeam\DirectMail\Scheduler;
 
 use DirectMailTeam\DirectMail\Repository\SysDmailRepository;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
-use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Scheduler\AbstractAdditionalFieldProvider;
@@ -110,7 +109,7 @@ class MailFromDraftAdditionalFields extends AbstractAdditionalFieldProvider
      */
     public function validateAdditionalFields(array &$submittedData, SchedulerModuleController $schedulerModuleController)
     {
-        $draftUid = $submittedData['selecteddraft'] = (int) $submittedData['selecteddraft'];
+        $draftUid = $submittedData['selecteddraft'] = (int)$submittedData['selecteddraft'];
         if ($draftUid > 0) {
             $draftRecord = BackendUtility::getRecord('sys_dmail', $draftUid);
 

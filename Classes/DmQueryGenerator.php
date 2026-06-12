@@ -18,7 +18,6 @@ namespace DirectMailTeam\DirectMail;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Lowlevel\Database\QueryGenerator;
 use TYPO3\CMS\Lowlevel\Controller\DatabaseIntegrityController;
 
 /**
@@ -83,7 +82,7 @@ class DmQueryGenerator extends DatabaseIntegrityController
                 $selectQueryString = $this->getSelectQuery($queryString);
                 $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($this->table);
 
-                $isConnectionMysql = strpos($connection->getServerVersion(), 'MySQL') === 0;
+                $isConnectionMysql = str_starts_with($connection->getServerVersion(), 'MySQL');
                 $fullQueryString = '';
                 try {
                     $fullQueryString = $selectQueryString;
@@ -116,7 +115,7 @@ class DmQueryGenerator extends DatabaseIntegrityController
                 // Show query
                 $this->enablePrefix = true;
                 $queryString = $this->getQuery($this->queryConfig);
-                if($queryLimitDisabled) {
+                if ($queryLimitDisabled) {
                     $this->extFieldLists['queryLimit'] = '';
                 }
                 $selectQueryString = $this->getSelectQuery($queryString);

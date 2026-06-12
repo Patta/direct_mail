@@ -82,7 +82,7 @@ return [
         'source' => 'EXT:direct_mail/Resources/Public/Images/module-directmail-statistics.svg',
     ],
 
-/**
+    /**
     'mysvgicon' => [
         // icon provider class
         'provider' => \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,

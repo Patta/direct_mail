@@ -8,13 +8,11 @@ use DirectMailTeam\DirectMail\Dmailer;
 use DirectMailTeam\DirectMail\Repository\SysDmailMaillogRepository;
 use DirectMailTeam\DirectMail\Repository\SysDmailRepository;
 use DirectMailTeam\DirectMail\Utility\SchedulerUtility;
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException;
-use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
+use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
@@ -23,22 +21,19 @@ use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 use TYPO3\CMS\Core\Pagination\ArrayPaginator;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
-
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 final class MailerEngineController extends MainController
 {
-
     protected FlashMessageQueue $flashMessageQueue;
 
     public function __construct(
         protected readonly ModuleTemplateFactory $moduleTemplateFactory,
         protected readonly IconFactory $iconFactory,
-
         protected readonly string $moduleName = 'directmail_module_mailerengine',
         protected readonly string $lllFile = 'LLL:EXT:direct_mail/Resources/Private/Language/locallang_mod2-6.xlf',
-
         protected ?LanguageService $languageService = null,
-
         protected array $pageinfo = [],
         protected int $id = 0,
         protected int $uid = 0, //for cmd == 'delete'
@@ -47,8 +42,7 @@ final class MailerEngineController extends MainController
         protected bool $invokeMailerEngine = false,
         protected string $cmd = '',
         // ...
-    ) {
-    }
+    ) {}
 
     public function handleRequest(ServerRequestInterface $request): ResponseInterface
     {
@@ -107,7 +101,7 @@ final class MailerEngineController extends MainController
                                 'keyOfFirstPaginatedItem' => $paginator->getKeyOfFirstPaginatedItem(),
                                 'keyOfLastPaginatedItem' => $paginator->getKeyOfLastPaginatedItem(),
                                 'paginatedItems' => $paginator->getPaginatedItems(),
-                                'links' =>  array_fill(0, $paginator->getNumberOfPages(), '')
+                                'links' =>  array_fill(0, $paginator->getNumberOfPages(), ''),
                             ],
                             'id' => $this->id,
                             'invoke' => $mailerEngine['invoke'],

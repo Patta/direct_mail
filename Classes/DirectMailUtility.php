@@ -21,19 +21,19 @@ use DirectMailTeam\DirectMail\Utility\FetchUtility;
 use DirectMailTeam\DirectMail\Utility\RdctUtility;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
+use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
+use TYPO3\CMS\Core\Http\ServerRequestFactory;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageRendererResolver;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\FileRepository;
+use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
-use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
-use TYPO3\CMS\Core\Http\ServerRequestFactory;
-use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 
 /**
  * Static class.
@@ -84,7 +84,7 @@ class DirectMailUtility
      */
     public static function getURLGlue(string $url): string
     {
-        return (strpos($url, '?') !== false) ? '&' : '?';
+        return (str_contains($url, '?')) ? '&' : '?';
     }
 
     public static function prepareTypolinkParams(string $params): string
@@ -270,8 +270,8 @@ class DirectMailUtility
         string $messageText,
         string $messageHeader,
         ContextualFeedbackSeverity $messageType,
-        bool $storeInSession = false): FlashMessage
-    {
+        bool $storeInSession = false
+    ): FlashMessage {
         return GeneralUtility::makeInstance(
             FlashMessage::class,
             $messageText,
@@ -406,7 +406,7 @@ class DirectMailUtility
             return $message;
         }
 
-        $lengthLimit = $urlmode === 'all' ? 0 :(int)$urlmode;
+        $lengthLimit = $urlmode === 'all' ? 0 : (int)$urlmode;
         //$pattern = '/(http|https):\\/\\/.+(?=[\\]\\.\\?]*([\\! \'"()<>]+|$))/iU';
         // https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch08s02.html
         $pattern = '/\b((https?):\/\/|(www)\.)[-A-Z0-9+&@#\/%?=~_|$!:,.;]*[A-Z0-9+&@#\/%=~_|$]/i';

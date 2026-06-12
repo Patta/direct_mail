@@ -1,4 +1,5 @@
 <?php
+
 //https://docs.typo3.org/m/typo3/reference-coreapi/main/en-us/ExtensionArchitecture/HowTo/BackendModule/ModuleConfiguration.html
 use DirectMailTeam\DirectMail\Module\ConfigurationController;
 use DirectMailTeam\DirectMail\Module\DmailController;
@@ -98,4 +99,3 @@ return [
         ],
     ],
 ];
-

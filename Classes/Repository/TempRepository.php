@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace DirectMailTeam\DirectMail\Repository;
 
 use DirectMailTeam\DirectMail\DmQueryGenerator;
-use DirectMailTeam\DirectMail\Repository\FeGroupsRepository;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
@@ -23,10 +22,10 @@ class TempRepository extends MainRepository
      * @return array recipients' data
      */
     public function fetchRecordsListValues(
-        array $listArr, 
-        string $table, 
-        array $fields = ['uid', 'name', 'email']): array
-    {
+        array $listArr,
+        string $table,
+        array $fields = ['uid', 'name', 'email']
+    ): array {
         $outListArr = [];
         if (is_array($listArr) && count($listArr)) {
             $idlist = implode(',', $listArr);
@@ -277,7 +276,7 @@ class TempRepository extends MainRepository
                 ->from($tableSysDmailCategory)
                 ->where(
                     $queryBuilder->expr()->eq(
-                        'l18n_parent', 
+                        'l18n_parent',
                         $queryBuilder->createNamedParameter(0, Connection::PARAM_INT)
                     ),
                     $queryBuilder->expr()->in(
@@ -300,8 +299,8 @@ class TempRepository extends MainRepository
     }
 
     protected function selectByMultipleCondition(
-        string $table, 
-        array $row, 
+        string $table,
+        array $row,
         int $sysLanguageUid,
         array $tcaTable
     ) {
@@ -310,15 +309,15 @@ class TempRepository extends MainRepository
         ->from($table)
         ->where(
             $queryBuilder->expr()->eq(
-                'pid', 
+                'pid',
                 $queryBuilder->createNamedParameter($row['pid'], Connection::PARAM_INT)
             ),
             $queryBuilder->expr()->eq(
-                $tcaTable['ctrl']['languageField'], 
+                $tcaTable['ctrl']['languageField'],
                 $queryBuilder->createNamedParameter($sysLanguageUid, Connection::PARAM_INT)
             ),
             $queryBuilder->expr()->eq(
-                $tcaTable['ctrl']['transOrigPointerField'], 
+                $tcaTable['ctrl']['transOrigPointerField'],
                 $queryBuilder->createNamedParameter($row['uid'], Connection::PARAM_INT)
             )
         )
@@ -340,8 +339,8 @@ class TempRepository extends MainRepository
     public function getRecordOverlay(
         string $table,
         array $row,
-        int $sysLanguageUid): array
-    {
+        int $sysLanguageUid
+    ): array {
         if ($row['uid'] > 0 && $row['pid'] > 0) {
             $tcaTable = $GLOBALS['TCA'][$table] ?? false;
             if ($tcaTable && $tcaTable['ctrl']['languageField'] && $tcaTable['ctrl']['transOrigPointerField']) {
@@ -357,10 +356,9 @@ class TempRepository extends MainRepository
                         if (is_array($olrow)) {
                             foreach ($row as $fN => $fV) {
                                 if ($fN != 'uid' && $fN != 'pid' && isset($olrow[$fN])) {
-                                    if(!isset($tcaTable['l10n_mode'][$fN]) && strcmp(trim((string)$olrow[$fN]), '')) {
+                                    if (!isset($tcaTable['l10n_mode'][$fN]) && strcmp(trim((string)$olrow[$fN]), '')) {
                                         $row[$fN] = $olrow[$fN];
-                                    }
-                                    elseif (isset($tcaTable['l10n_mode'][$fN]) && $tcaTable['l10n_mode'][$fN] != 'exclude' 
+                                    } elseif (isset($tcaTable['l10n_mode'][$fN]) && $tcaTable['l10n_mode'][$fN] != 'exclude'
                                         && ($tcaTable['l10n_mode'][$fN] != 'mergeIfNotBlank' || strcmp(trim((string)$olrow[$fN]), ''))
                                     ) {
                                         $row[$fN] = $olrow[$fN];
@@ -369,8 +367,8 @@ class TempRepository extends MainRepository
                             }
                         }
 
-                    // Otherwise, check if sysLanguageUid is different from the value of the record
-                    // that means a japanese site might try to display french content.
+                        // Otherwise, check if sysLanguageUid is different from the value of the record
+                        // that means a japanese site might try to display french content.
                     } elseif ($sysLanguageUid != $row[$tcaTable['ctrl']['languageField']]) {
                         unset($row);
                     }

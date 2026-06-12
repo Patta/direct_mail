@@ -126,7 +126,7 @@ class JumpurlController implements MiddlewareInterface
                 }
 
                 // to count the dmailerping correctly, we need something unique
-                $submittedAuthCode = preg_replace("/[^a-zA-Z0-9]/", "", $submittedAuthCode);
+                $submittedAuthCode = preg_replace('/[^a-zA-Z0-9]/', '', $submittedAuthCode);
             }
 
             if ($this->responseType !== 0) {
@@ -192,7 +192,7 @@ class JumpurlController implements MiddlewareInterface
                 ['allowed_classes' => false]
             );
 
-            if(is_array($mailContent)) {
+            if (is_array($mailContent)) {
                 if ($targetIndex >= 0) {
                     // Link (number)
                     $this->responseType = self::RESPONSE_TYPE_HREF;
@@ -220,7 +220,7 @@ class JumpurlController implements MiddlewareInterface
         $recipientTable = '';
         $recipientUid = 0;
         if (!empty($combinedRecipient)) {
-            list($recipientTable, $recipientUid) = explode('_', $combinedRecipient);
+            [$recipientTable, $recipientUid] = explode('_', $combinedRecipient);
         }
 
         switch ($recipientTable) {
@@ -267,7 +267,7 @@ class JumpurlController implements MiddlewareInterface
             if (isset($this->recipientRecord[$substField])) {
                 $processedTargetUrl = str_replace(
                     '###USER_' . $substField . '###',
-                    (string) $this->recipientRecord[$substField],
+                    (string)$this->recipientRecord[$substField],
                     $processedTargetUrl
                 );
             }

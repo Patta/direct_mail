@@ -70,8 +70,7 @@ class SysDmailRepository extends MainRepository
                     $queryBuilder->createNamedParameter(1, Connection::PARAM_INT)
                 )
             );
-        }
-        else {
+        } else {
             $queryBuilder->andWhere(
                 $queryBuilder->expr()->eq(
                     'scheduled',
@@ -162,12 +161,14 @@ class SysDmailRepository extends MainRepository
         ->add(GeneralUtility::makeInstance(DeletedRestriction::class));
 
         return $queryBuilder
-        ->selectLiteral($this->table . '.uid', 
-                        $this->table . '.subject', 
-                        $this->table . '.scheduled',
-                        $this->table . '.scheduled_begin', 
-                        $this->table . '.scheduled_end', 
-                        'COUNT(' . $this->tableSysDmailMaillog . '.mid) AS count')
+        ->selectLiteral(
+            $this->table . '.uid',
+            $this->table . '.subject',
+            $this->table . '.scheduled',
+            $this->table . '.scheduled_begin',
+            $this->table . '.scheduled_end',
+            'COUNT(' . $this->tableSysDmailMaillog . '.mid) AS count'
+        )
         ->from($this->table, $this->table)
         ->leftJoin(
             $this->table,
@@ -362,7 +363,7 @@ class SysDmailRepository extends MainRepository
             ->from($this->table)
             ->where(
                 $queryBuilder->expr()->eq(
-                    'type', 
+                    'type',
                     $queryBuilder->createNamedParameter($type, Connection::PARAM_INT)
                 )
             )
@@ -379,7 +380,7 @@ class SysDmailRepository extends MainRepository
             ->from($this->table)
             ->where(
                 $queryBuilder->expr()->eq(
-                    'uid', 
+                    'uid',
                     $queryBuilder->createNamedParameter($draftUid, Connection::PARAM_INT)
                 )
             )

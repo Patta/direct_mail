@@ -16,7 +16,7 @@ return [
             'exclude' => true,
             'label' => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.language',
             'config' => [
-                'type' => 'language'
+                'type' => 'language',
             ],
         ],
         'title' => [
@@ -169,7 +169,7 @@ return [
             'description' => 'LLL:EXT:direct_mail/Resources/Private/Language/locallang_csh_sysdmailg.xlf:queryLimit.details',
             'config' => [
                 'type' => 'input',
-            ]
+            ],
         ],
         'queryLimitDisabled' => [
             'label' => 'LLL:EXT:direct_mail/Resources/Private/Language/locallang_tca.xlf:sys_dmail_group.queryLimitDisabled',

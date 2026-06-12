@@ -41,8 +41,8 @@ class SelectCategories
 
         $site = $params['site'];
         $languages = ($site instanceof Site) ? $site->getAllLanguages() : [];
-        foreach($languages as $language) {
-            if($language->getLocale()->getLanguageCode() == $lang) {
+        foreach ($languages as $language) {
+            if ($language->getLocale()->getLanguageCode() == $lang) {
                 $sysLanguageUid = $language->getLanguageId();
             }
         }
@@ -55,7 +55,7 @@ class SelectCategories
                 if (is_array($rows)) {
                     foreach ($rows as $rowCat) {
                         if ($localizedRowCat = $tempRepository->getRecordOverlay($table, $rowCat, $sysLanguageUid)) {
-                            if(count($localizedRowCat)) {
+                            if (count($localizedRowCat)) {
                                 $params['items'][$k][0] = $localizedRowCat['category'];
                             }
                         }

@@ -283,8 +283,8 @@ return [
                 'allowed' => 'common-image-types',
                 'appearance' => [
                     'fileByUrlAllowed' => false,
-                ]
-            ]
+                ],
+            ],
         ],
         'type' => [
             'label' => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.type',

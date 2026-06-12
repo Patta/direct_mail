@@ -20,8 +20,8 @@ class AuthCodeUtility
     public static function validateAuthCode(
         string $submittedAuthCode,
         array $recipientRecord,
-        string $authcodeFieldList = 'uid'): bool
-    {
+        string $authcodeFieldList = 'uid'
+    ): bool {
         if (!empty($submittedAuthCode)) {
             $hmac = self::getHmac($recipientRecord, $authcodeFieldList);
             if ($submittedAuthCode === $hmac) {

@@ -1,4 +1,5 @@
 <?php
+
 return [
     'directmail_configuration_update' => [
         'path' => '/directmail/configuration',

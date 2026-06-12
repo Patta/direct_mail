@@ -25,8 +25,8 @@ use DirectMailTeam\DirectMail\Repository\TtAddressRepository;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
+use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Charset\CharsetConverter;
@@ -40,11 +40,11 @@ use TYPO3\CMS\Core\Resource\Enum\DuplicationBehavior;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\SysLog\Type as SystemLogType;
-use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
+use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\File\ExtendedFileUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Recipient list module for tx_directmail extension
@@ -58,24 +58,19 @@ final class ImporterController extends MainController
     public function __construct(
         protected readonly ModuleTemplateFactory $moduleTemplateFactory,
         protected readonly EventDispatcherInterface $eventDispatcher,
-
         protected readonly string $moduleName = 'directmail_module_importer',
         protected readonly string $lllFile = 'LLL:EXT:direct_mail/Resources/Private/Language/locallang_mod2-6.xlf',
-
         protected ?LanguageService $languageService = null,
         protected ?ServerRequestInterface $request = null,
         protected ?BackendUserAuthentication $beUser = null,
-
         protected array $queryParams = [],
-
         protected string $httpReferer = '',
         protected string $requestHostOnly = '',
         protected array $importStep = [],
         protected array $csvImport = [],
         protected array $csvFile = [],
         protected array $indata = []
-    ) {
-    }
+    ) {}
 
     public function handleRequest(ServerRequestInterface $request): ResponseInterface
     {
@@ -352,7 +347,7 @@ final class ImporterController extends MainController
                 // TODO: make it variable?
                 $optUnique = [
                     ['val' => 'email', 'text' => 'email'],
-                    ['val' =>'name', 'text' => 'name'],
+                    ['val' => 'name', 'text' => 'name'],
                 ];
 
                 $output['conf']['disableInput'] = ($this->params['inputDisable'] ?? 0) == 1 ? true : false;
@@ -457,7 +452,7 @@ final class ImporterController extends MainController
                 array_unshift($mapFields, ['noMap', $this->languageService->sL($this->lllFile . ':mailgroup_import_mapping_mapTo')]);
                 $mapFields[] = [
                     'cats',
-                    $this->languageService->sL($this->lllFile . ':mailgroup_import_mapping_categories')
+                    $this->languageService->sL($this->lllFile . ':mailgroup_import_mapping_categories'),
                 ];
                 reset($csv_firstRow);
                 reset($csvData);
@@ -561,7 +556,7 @@ final class ImporterController extends MainController
                     foreach ($this->indata['map'] as $fieldNr => $fieldMapped) {
                         $output['startImport']['hiddenMap'][] = [
                             'name' => htmlspecialchars('CSV_IMPORT[map][' . $fieldNr . ']'),
-                            'value' => htmlspecialchars($fieldMapped)
+                            'value' => htmlspecialchars($fieldMapped),
                         ];
                     }
                 }
@@ -569,7 +564,7 @@ final class ImporterController extends MainController
                     foreach ($this->indata['cat'] as $k => $catUid) {
                         $output['startImport']['hiddenCat'][] = [
                             'name' => htmlspecialchars('CSV_IMPORT[cat][' . $k . ']'),
-                            'value' => htmlspecialchars($catUid)
+                            'value' => htmlspecialchars($catUid),
                         ];
                     }
                 }
@@ -601,8 +596,8 @@ final class ImporterController extends MainController
 
         $output['title'] = $this->languageService->sL($this->lllFile . ':mailgroup_import');
 
-         /** @var ImporterOutputEvent $event */
-         $event = $this->eventDispatcher->dispatch(
+        /** @var ImporterOutputEvent $event */
+        $event = $this->eventDispatcher->dispatch(
             new ImporterOutputEvent($output)
         );
         $output = $event->getOutput();
@@ -631,7 +626,7 @@ final class ImporterController extends MainController
         foreach ($mappedCsv as $k => $csvData) {
             if (!in_array($k, $remove)) {
                 $found = 0;
-                foreach ($cmpCsv as $kk =>$cmpData) {
+                foreach ($cmpCsv as $kk => $cmpData) {
                     if ($k != $kk) {
                         if ($csvData[$this->indata['record_unique']] == $cmpData[$this->indata['record_unique']]) {
                             $double[] = $mappedCsv[$kk];
@@ -941,12 +936,11 @@ final class ImporterController extends MainController
         if ($dbCharset != $this->indata['charset']) {
             $converter = GeneralUtility::makeInstance(CharsetConverter::class);
             foreach ($data as $k => $v) {
-                if(is_array($v)) {
-                    foreach($v as $k2 => $val) {
+                if (is_array($v)) {
+                    foreach ($v as $k2 => $val) {
                         $data[$k][$k2] = $converter->conv($val, strtolower($this->indata['charset']), $dbCharset);
                     }
-                }
-                else {
+                } else {
                     $data[$k] = $converter->conv($v, strtolower($this->indata['charset']), $dbCharset);
                 }
             }
@@ -1051,7 +1045,7 @@ final class ImporterController extends MainController
         $resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
         try {
             return $resourceFactory->getFileObject($fileUid);
-        } catch(\TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException $e) {
+        } catch (\TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException $e) {
         }
         return false;
     }

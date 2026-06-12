@@ -151,8 +151,8 @@ class MainController
         string $messageText,
         string $messageHeader,
         ContextualFeedbackSeverity $messageType,
-        bool $storeInSession = false): FlashMessage
-    {
+        bool $storeInSession = false
+    ): FlashMessage {
         return GeneralUtility::makeInstance(
             FlashMessage::class,
             $messageText,
@@ -278,14 +278,14 @@ class MainController
             'country',
             'fax',
             'module_sys_dmail_category',
-            'module_sys_dmail_html'
+            'module_sys_dmail_html',
         ];
     }
 
     protected function getFieldListFeUsers(): array
     {
         $fieldList = $this->getFieldList();
-        foreach(['telephone' => 'phone'] as $key => $val) {
+        foreach (['telephone' => 'phone'] as $key => $val) {
             $index = array_search($val, $fieldList);
             $fieldList[$index] = $key;
         }
@@ -444,7 +444,7 @@ class MainController
         $getLevels = 10000;
         // Finding tree and offer setting of values recursively.
         $tree = GeneralUtility::makeInstance(PageTreeView::class);
-        $tree->init(empty($perms_clause) ? ''  : 'AND ' . $perms_clause);
+        $tree->init(empty($perms_clause) ? '' : 'AND ' . $perms_clause);
         $tree->makeHTML = 0;
         $tree->setRecs = 0;
         $tree->getTree($id, $getLevels, '');
@@ -455,7 +455,7 @@ class MainController
     protected function countRecipients(array $idLists): int
     {
         $count = 0;
-        foreach(['tt_address', 'fe_users', 'PLAINLIST'] as $recipientsType) {
+        foreach (['tt_address', 'fe_users', 'PLAINLIST'] as $recipientsType) {
             if (is_array($idLists[$recipientsType] ?? false)) {
                 $count += count($idLists[$recipientsType]);
             }

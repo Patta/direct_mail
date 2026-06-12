@@ -11,8 +11,7 @@ return [
     'directmail' => [
         'labels' => 'LLL:EXT:direct_mail/Resources/Private/Language/locallangNavFrame.xlf',
         'iconIdentifier' => 'directmail-module',
-        'navigationComponent' => '@typo3/backend/page-tree/page-tree-element',
-        //'navigationComponent' => 'TYPO3/CMS/Backend/PageTree/PageTreeElement',
+        'navigationComponent' => '@typo3/backend/tree/page-tree-element',
     ],
     'directmail_module_directmail' => [
         'parent' => 'directmail',

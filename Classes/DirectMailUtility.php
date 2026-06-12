@@ -89,7 +89,7 @@ class DirectMailUtility
 
     public static function prepareTypolinkParams(string $params): string
     {
-        return substr($params, 0, 1) == '&' ? substr($params, 1) : $params;
+        return str_starts_with($params, '&') ? substr($params, 1) : $params;
     }
 
     public static function getTypolinkURL(
@@ -111,7 +111,7 @@ class DirectMailUtility
                 $request = $request->withAttribute('applicationType', SystemEnvironmentBuilder::REQUESTTYPE_BE);
                 $GLOBALS['TYPO3_REQUEST'] = $request;
                 $cObj->setRequest($request);
-            } catch (\Throwable $e) {
+            } catch (\Throwable) {
                 // ignore: if we cannot create a request, typolink may still fail later
             }
         }
@@ -152,7 +152,7 @@ class DirectMailUtility
             $htmlmail->setJumperURLPrefix(
                 $urls['baseUrl'] . $glue .
                 'mid=###SYS_MAIL_ID###' .
-                ((int)$params['jumpurl_tracking_privacy'] ? '' : '&rid=###SYS_TABLE_NAME###_###USER_uid###') .
+                ((int)$params['jumpurl_tracking_privacy'] !== 0 ? '' : '&rid=###SYS_TABLE_NAME###_###USER_uid###') .
                 '&aC=###SYS_AUTHCODE###' .
                 '&jumpurl='
             );
@@ -348,10 +348,10 @@ class DirectMailUtility
 
         // plain
         if ($result['plainTextUrl']) {
-            if (!($row['sendOptions'] & 1)) {
+            if (($row['sendOptions'] & 1) === 0) {
                 $result['plainTextUrl'] = '';
             } else {
-                $urlParts = @parse_url($result['plainTextUrl']);
+                $urlParts = @parse_url((string)$result['plainTextUrl']);
                 if (!($urlParts['scheme'] ?? null)) {
                     $result['plainTextUrl'] = 'http://' . $result['plainTextUrl'];
                 }
@@ -360,10 +360,10 @@ class DirectMailUtility
 
         // html
         if ($result['htmlUrl']) {
-            if (!($row['sendOptions'] & 2)) {
+            if (($row['sendOptions'] & 2) === 0) {
                 $result['htmlUrl'] = '';
             } else {
-                $urlParts = @parse_url($result['htmlUrl']);
+                $urlParts = @parse_url((string)$result['htmlUrl']);
                 if (!($urlParts['scheme'] ?? null)) {
                     $result['htmlUrl'] = 'http://' . $result['htmlUrl'];
                 }
@@ -412,9 +412,7 @@ class DirectMailUtility
         $pattern = '/\b((https?):\/\/|(www)\.)[-A-Z0-9+&@#\/%?=~_|$!:,.;]*[A-Z0-9+&@#\/%=~_|$]/i';
         $messageSubstituted = preg_replace_callback(
             $pattern,
-            function (array $matches) use ($rdctUtility, $lengthLimit, $index_script_url) {
-                return $rdctUtility->getRedirects()->makeRedirectUrl($matches[0], $lengthLimit, $index_script_url);
-            },
+            fn(array $matches) => $rdctUtility->getRedirects()->makeRedirectUrl($matches[0], $lengthLimit, $index_script_url),
             $message
         );
         return $messageSubstituted;

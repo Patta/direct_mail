@@ -6,14 +6,7 @@ namespace DirectMailTeam\DirectMail\Event;
 
 final class DmailCompileMailGroupEvent
 {
-    private array $idLists = [];
-    private array $mailGroup = [];
-
-    public function __construct(array $idLists, array $mailGroup)
-    {
-        $this->idLists = $idLists;
-        $this->mailGroup = $mailGroup;
-    }
+    public function __construct(private array $idLists, private array $mailGroup) {}
 
     public function getIdLists(): array
     {

@@ -28,8 +28,10 @@ use TYPO3\CMS\Lowlevel\Controller\DatabaseIntegrityController;
  */
 class DmQueryGenerator extends DatabaseIntegrityController
 {
+    public $settings;
     protected array $allowedTables = ['tt_address', 'fe_users'];
 
+    #[\Override]
     public function mkTableSelect(string $name, string $cur): string
     {
         $out = [];
@@ -42,7 +44,7 @@ class DmQueryGenerator extends DatabaseIntegrityController
                 if ($this->showFieldAndTableNames) {
                     $label .= ' [' . $tN . ']';
                 }
-                $out[] = '<option value="' . htmlspecialchars($tN) . '"' . ($tN == $cur ? ' selected' : '') . '>' . htmlspecialchars($label) . '</option>';
+                $out[] = '<option value="' . htmlspecialchars((string)$tN) . '"' . ($tN == $cur ? ' selected' : '') . '>' . htmlspecialchars($label) . '</option>';
             }
         }
         $out[] = '</select>';
@@ -66,7 +68,7 @@ class DmQueryGenerator extends DatabaseIntegrityController
         $selectQueryString = '';
         // Query Maker:
         $this->init('queryConfig', $this->MOD_SETTINGS['queryTable'] ?? '', '', $this->MOD_SETTINGS);
-        if ($this->formName) {
+        if ($this->formName !== '' && $this->formName !== '0') {
             $this->setFormName($this->formName);
         }
         $tmpCode = $this->makeSelectorTable($this->MOD_SETTINGS, $request);
@@ -74,29 +76,26 @@ class DmQueryGenerator extends DatabaseIntegrityController
         $mQ = $this->MOD_SETTINGS['search_query_makeQuery'] ?? '';
 
         // Make form elements:
-        if ($this->table && is_array($GLOBALS['TCA'][$this->table])) {
-            if ($mQ) {
-                // Show query
-                $this->enablePrefix = true;
-                $queryString = $this->getQuery($this->queryConfig);
-                $selectQueryString = $this->getSelectQuery($queryString);
-                $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($this->table);
-
-                $isConnectionMysql = str_starts_with($connection->getServerVersion(), 'MySQL');
-                $fullQueryString = '';
-                try {
-                    $fullQueryString = $selectQueryString;
-                    $dataRows = $connection->executeQuery($selectQueryString)->fetchAllAssociative();
-                    //$output .= '<h2>SQL query</h2><div><code>' . htmlspecialchars($fullQueryString) . '</code></div>';
-                    $cPR = $this->getQueryResultCode($mQ, $dataRows, $this->table);
-                    $output .= '<h2>' . ($cPR['header'] ?? '') . '</h2><div>' . $cPR['content'] . '</div>';
-                } catch (DBALException $e) {
-                    $output .= '<h2>SQL query</h2><div><code>' . htmlspecialchars($fullQueryString) . '</code></div>';
-                    $out = '<p><strong>Error: <span class="text-danger">'
-                        . htmlspecialchars($e->getMessage())
-                        . '</span></strong></p>';
-                    $output .= '<h2>SQL error</h2><div>' . $out . '</div>';
-                }
+        if ($this->table && is_array($GLOBALS['TCA'][$this->table]) && $mQ) {
+            // Show query
+            $this->enablePrefix = true;
+            $queryString = $this->getQuery($this->queryConfig);
+            $selectQueryString = $this->getSelectQuery($queryString);
+            $connection = GeneralUtility::makeInstance(ConnectionPool::class)->getConnectionForTable($this->table);
+            $isConnectionMysql = str_starts_with($connection->getServerVersion(), 'MySQL');
+            $fullQueryString = '';
+            try {
+                $fullQueryString = $selectQueryString;
+                $dataRows = $connection->executeQuery($selectQueryString)->fetchAllAssociative();
+                //$output .= '<h2>SQL query</h2><div><code>' . htmlspecialchars($fullQueryString) . '</code></div>';
+                $cPR = $this->getQueryResultCode($mQ, $dataRows, $this->table);
+                $output .= '<h2>' . ($cPR['header'] ?? '') . '</h2><div>' . $cPR['content'] . '</div>';
+            } catch (DBALException $e) {
+                $output .= '<h2>SQL query</h2><div><code>' . htmlspecialchars($fullQueryString) . '</code></div>';
+                $out = '<p><strong>Error: <span class="text-danger">'
+                    . htmlspecialchars($e->getMessage())
+                    . '</span></strong></p>';
+                $output .= '<h2>SQL error</h2><div>' . $out . '</div>';
             }
         }
         return ['<div class="database-query-builder">' . $output . '</div>', $selectQueryString];
@@ -106,20 +105,18 @@ class DmQueryGenerator extends DatabaseIntegrityController
     {
         $selectQueryString = '';
         $this->init('queryConfig', $this->settings['queryTable'] ?? '', '', $this->settings);
-        if ($this->formName) {
+        if ($this->formName !== '' && $this->formName !== '0') {
             $this->setFormName($this->formName);
         }
         $tmpCode = $this->makeSelectorTable($this->settings, 'query,limit');
-        if ($this->table && is_array($GLOBALS['TCA'][$this->table])) {
-            if ($this->settings['search_query_makeQuery']) {
-                // Show query
-                $this->enablePrefix = true;
-                $queryString = $this->getQuery($this->queryConfig);
-                if ($queryLimitDisabled) {
-                    $this->extFieldLists['queryLimit'] = '';
-                }
-                $selectQueryString = $this->getSelectQuery($queryString);
+        if ($this->table && is_array($GLOBALS['TCA'][$this->table]) && $this->settings['search_query_makeQuery']) {
+            // Show query
+            $this->enablePrefix = true;
+            $queryString = $this->getQuery($this->queryConfig);
+            if ($queryLimitDisabled) {
+                $this->extFieldLists['queryLimit'] = '';
             }
+            $selectQueryString = $this->getSelectQuery($queryString);
         }
         return $selectQueryString;
     }

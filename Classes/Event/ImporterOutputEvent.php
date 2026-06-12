@@ -6,12 +6,7 @@ namespace DirectMailTeam\DirectMail\Event;
 
 final class ImporterOutputEvent
 {
-    private array $output = [];
-
-    public function __construct(array $output)
-    {
-        $this->output = $output;
-    }
+    public function __construct(private array $output) {}
 
     public function getOutput(): array
     {

@@ -16,10 +16,10 @@ class DmWidget implements WidgetInterface, RequestAwareWidgetInterface
     private ServerRequestInterface $request;
 
     public function __construct(
-        private WidgetConfigurationInterface $configuration,
-        private DmProvider $dataProvider,
+        private readonly WidgetConfigurationInterface $configuration,
+        private readonly DmProvider $dataProvider,
         private readonly BackendViewFactory $backendViewFactory,
-        private array $options = []
+        private readonly array $options = []
     ) {}
 
     public function setRequest(ServerRequestInterface $request): void

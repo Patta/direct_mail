@@ -1,5 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
+use DirectMailTeam\DirectMail\SelectCategories;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+
 defined('TYPO3') || die();
 
 // tt_content modified
@@ -15,7 +20,7 @@ $ttContentCols = [
             'foreign_table' => 'sys_dmail_category',
             // TCEFORM.tt_content.module_sys_dmail_category.PAGE_TSCONFIG_IDLIST = ids
             'foreign_table_where' => 'AND sys_dmail_category.l18n_parent=0 AND sys_dmail_category.pid IN (###PAGE_TSCONFIG_IDLIST###) ORDER BY sys_dmail_category.sorting',
-            'itemsProcFunc' => DirectMailTeam\DirectMail\SelectCategories::class . '->getLocalizedCategories',
+            'itemsProcFunc' => SelectCategories::class . '->getLocalizedCategories',
             'itemsProcFunc_config' => [
                 'table' => 'sys_dmail_category',
                 'indexField' => 'uid',
@@ -27,5 +32,5 @@ $ttContentCols = [
         ],
     ],
 ];
-TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns('tt_content', $ttContentCols);
-TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCATypes('tt_content', 'module_sys_dmail_category');
+ExtensionManagementUtility::addTCAcolumns('tt_content', $ttContentCols);
+ExtensionManagementUtility::addToAllTCATypes('tt_content', 'module_sys_dmail_category');

@@ -2,6 +2,8 @@
 
 namespace DirectMailTeam\DirectMail\Tests\Unit\Mailer;
 
+use TYPO3\CMS\Core\Tests\UnitTestCase;
+
 /*
  * This file is part of the TYPO3 CMS project.
  *
@@ -14,13 +16,12 @@ namespace DirectMailTeam\DirectMail\Tests\Unit\Mailer;
  *
  * The TYPO3 project - inspiring people to share!
  */
-
 /**
  * Testcase for class "DirectMailTeam\DirectMail\Dmailer"
  *
  * @author Bernhard Kraft <kraft@webconsulting.at>
  */
-class DirectMailEngineTest extends \TYPO3\CMS\Core\Tests\UnitTestCase
+class DirectMailEngineTest extends UnitTestCase
 {
     /**
      * @test

@@ -32,6 +32,7 @@ return RectorConfig::configure()
         AddVoidReturnTypeWhereNoReturnRector::class,
     ])
     ->withSkip([
+        Ssch\TYPO3Rector\CodeQuality\General\GeneralUtilityMakeInstanceToConstructorPropertyRector::class,
         __DIR__ . '/../.Build/*',
         __DIR__ . '/../.ddev/*',
         __DIR__ . '/../Build/*',

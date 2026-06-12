@@ -61,7 +61,7 @@ final class MailerEngineController extends MainController
         $permsClause = $this->getBackendUser()->getPagePermsClause(Permission::PAGE_SHOW);
         $pageAccess = BackendUtility::readPageAccess($this->id, $permsClause);
         $this->pageinfo = is_array($pageAccess) ? $pageAccess : [];
-        $this->access = is_array($this->pageinfo) ? true : false;
+        $this->access = is_array($this->pageinfo);
 
         $moduleTemplate = $this->moduleTemplateFactory->create($request);
         return $this->indexAction($moduleTemplate);
@@ -74,7 +74,7 @@ final class MailerEngineController extends MainController
             $module = $this->getModulName();
 
             if ($module == 'dmail') {
-                if ($this->cmd == 'delete' && $this->uid) {
+                if ($this->cmd === 'delete' && $this->uid) {
                     $this->deleteDMail($this->uid);
                 }
 
@@ -110,7 +110,7 @@ final class MailerEngineController extends MainController
                             'show' => true,
                         ]
                     );
-                } elseif ($this->id != 0) {
+                } elseif ($this->id !== 0) {
                     $message = $this->createFlashMessage(
                         $this->languageService->sL($this->lllFile . ':dmail_noRegular'),
                         $this->languageService->sL($this->lllFile . ':dmail_newsletters'),

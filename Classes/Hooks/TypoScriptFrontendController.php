@@ -14,8 +14,8 @@ namespace DirectMailTeam\DirectMail\Hooks;
  *
  * The TYPO3 project - inspiring people to share!
  */
-
 use DirectMailTeam\DirectMail\Utility\DmRegistryUtility;
+use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\UserAspect;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -37,14 +37,14 @@ class TypoScriptFrontendController
         $accessToken = (string)($GLOBALS['TYPO3_REQUEST']->getQueryParams()['access_token'] ?? null);
         if ($directMailFeGroup > 0 && GeneralUtility::makeInstance(DmRegistryUtility::class)->validateAndRemoveAccessToken($accessToken)) {
             /** @var UserAspect $userAspect */
-            $userAspect = $typoScriptFrontendController->getContext()->getAspect('frontend.user');
+            $userAspect = GeneralUtility::makeInstance(Context::class)->getAspect('frontend.user');
 
             // we reset the content if required
             if (!in_array($directMailFeGroup, $userAspect->getGroupIds(), true)) {
                 // code was refactor, using a different hook!
-                $typoScriptFrontendController->getContext()->setAspect(
+                GeneralUtility::makeInstance(Context::class)->setAspect(
                     'frontend.user',
-                    new UserAspect($typoScriptFrontendController->fe_user, [$directMailFeGroup])
+                    new UserAspect($GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.user'), [$directMailFeGroup])
                 );
             }
         }

@@ -66,7 +66,7 @@ class MailFromDraft extends AbstractTask
             $draftRecord = BackendUtility::getRecord('sys_dmail', $this->draftUid);
 
             // update recipients
-            $recipientGroups = explode(',', $draftRecord['recipientGroups']);
+            $recipientGroups = explode(',', (string)$draftRecord['recipientGroups']);
             $dmailController = GeneralUtility::makeInstance(DmailController::class);
 
             $newRecipients = $dmailController->cmd_compileMailGroup($recipientGroups);
@@ -177,7 +177,7 @@ class MailFromDraft extends AbstractTask
         if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['direct_mail']['mailFromDraft'] ?? false)) {
             foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['direct_mail']['mailFromDraft'] as $hookObj) {
                 $hookObjectInstance = GeneralUtility::makeInstance($hookObj);
-                if (!(is_object($hookObjectInstance) && ($hookObjectInstance instanceof MailFromDraftHookInterface))) {
+                if (!($hookObjectInstance instanceof MailFromDraftHookInterface)) {
                     throw new \Exception('Hook object for "mailFromDraft" must implement the "MailFromDraftHookInterface"!', 1400866815);
                 }
                 $this->hookObjects[] = $hookObjectInstance;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DirectMailTeam\DirectMail\Repository;
 
+use Doctrine\DBAL\ArrayParameterType;
 use TYPO3\CMS\Core\Database\Connection;
 
 class FeUsersRepository extends MainRepository
@@ -76,10 +77,8 @@ class FeUsersRepository extends MainRepository
 
             $rows = $queryBuilder->executeQuery()->fetchAllAssociative();
 
-            if ($rows) {
-                if (is_array($rows[0])) {
-                    return $rows[0];
-                }
+            if ($rows !== [] && is_array($rows[0])) {
+                return $rows[0];
             }
         }
         return 0;
@@ -187,7 +186,7 @@ class FeUsersRepository extends MainRepository
                 $queryBuilder->expr()->and(
                     $queryBuilder->expr()->in(
                         $this->table . '.pid',
-                        $queryBuilder->createNamedParameter($pidArray, Connection::PARAM_INT_ARRAY)
+                        $queryBuilder->createNamedParameter($pidArray, ArrayParameterType::INTEGER)
                     ),
                     $queryBuilder->expr()->neq(
                         $this->table . '.email',
@@ -222,7 +221,7 @@ class FeUsersRepository extends MainRepository
                 $queryBuilder->expr()->and(
                     $queryBuilder->expr()->in(
                         $this->table . '.pid',
-                        $queryBuilder->createNamedParameter($pidArray, Connection::PARAM_INT_ARRAY)
+                        $queryBuilder->createNamedParameter($pidArray, ArrayParameterType::INTEGER)
                     ),
                     $queryBuilder->expr()->eq(
                         'mm_1.uid_foreign',

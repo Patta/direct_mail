@@ -65,29 +65,27 @@ class Container
         }
 
         // this check could probably be moved to TS
-        if ($GLOBALS['TSFE']->config['config']['insertDmailerBoundaries']) {
-            if ($content != '') {
-                // setting the default
-                $categoryList = '';
-                if ((int)$this->cObj->data['module_sys_dmail_category'] >= 1) {
-                    // if content type "RECORDS" we have to strip off
-                    // boundaries from indcluded records
-                    if ($this->cObj->data['CType'] == 'shortcut') {
-                        $content = $this->stripInnerBoundaries($content);
-                    }
-
-                    // get categories of tt_content element
-                    $rowCats = GeneralUtility::makeInstance(SysDmailCategoryRepository::class)->selectSysDmailCategoryForContainer((int)$this->cObj->data['uid']);
-                    if ($rowCats && count($rowCats)) {
-                        foreach ($rowCats as $cat) {
-                            $categoryList .= $cat['uid'] . ',';
-                        }
-                        $categoryList = rtrim($categoryList, ',');
-                    }
+        if ($GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.typoscript')->getConfigArray()['insertDmailerBoundaries'] && $content != '') {
+            // setting the default
+            $categoryList = '';
+            if ((int)$this->cObj->data['module_sys_dmail_category'] >= 1) {
+                // if content type "RECORDS" we have to strip off
+                // boundaries from indcluded records
+                if ($this->cObj->data['CType'] == 'shortcut') {
+                    $content = $this->stripInnerBoundaries($content);
                 }
-                // wrap boundaries around content
-                $content = $this->cObj->wrap($categoryList, $this->boundaryStartWrap) . PHP_EOL . trim($content) . PHP_EOL . $this->boundaryEnd . PHP_EOL;
+
+                // get categories of tt_content element
+                $rowCats = GeneralUtility::makeInstance(SysDmailCategoryRepository::class)->selectSysDmailCategoryForContainer((int)$this->cObj->data['uid']);
+                if ($rowCats && count($rowCats)) {
+                    foreach ($rowCats as $cat) {
+                        $categoryList .= $cat['uid'] . ',';
+                    }
+                    $categoryList = rtrim($categoryList, ',');
+                }
             }
+            // wrap boundaries around content
+            $content = $this->cObj->wrap($categoryList, $this->boundaryStartWrap) . PHP_EOL . trim($content) . PHP_EOL . $this->boundaryEnd . PHP_EOL;
         }
         return $content;
     }
@@ -104,7 +102,7 @@ class Container
         // only dummy code at the moment
         $searchString = $this->cObj->wrap('[\d,]*', $this->boundaryStartWrap);
         $content = preg_replace('/' . $searchString . '/', '', $content);
-        $content = preg_replace('/' . $this->boundaryEnd . '/', '', $content);
+        $content = preg_replace('/' . $this->boundaryEnd . '/', '', (string)$content);
         return $content;
     }
 
@@ -119,7 +117,7 @@ class Container
      */
     public function breakLines($content, array $conf)
     {
-        $linebreak = $GLOBALS['TSFE']->cObj->stdWrap(($conf['linebreak'] ? $conf['linebreak'] : chr(32) . LF), $conf['linebreak.']);
+        $linebreak = $GLOBALS['TSFE']->cObj->stdWrap(($conf['linebreak'] ?: chr(32) . LF), $conf['linebreak.']);
         $charWidth = $GLOBALS['TSFE']->cObj->stdWrap(($conf['charWidth'] ? (int)$conf['charWidth'] : 76), $conf['charWidth.']);
 
         return MailUtility::breakLinesForEmail($content, $linebreak, $charWidth);

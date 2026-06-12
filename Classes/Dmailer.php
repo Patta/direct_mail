@@ -247,7 +247,7 @@ class Dmailer implements LoggerAwareInterface
         }
 
         //$this->encoding          = $row['encoding'];
-        $this->theParts          = unserialize(base64_decode($row['mailContent']));
+        $this->theParts          = unserialize(base64_decode((string)$row['mailContent']));
         $this->messageid         = $this->theParts['messageid'];
         $this->subject           = $this->ensureCorrectEncoding($row['subject']);
         $this->fromEmail         = $row['from_email'];
@@ -271,7 +271,7 @@ class Dmailer implements LoggerAwareInterface
             $this->dmailer['boundaryParts_html'][$bKey] = explode('-->', $bContent, 2);
 
             // Remove useless HTML comments
-            if (substr($this->dmailer['boundaryParts_html'][$bKey][0], 1) == 'END') {
+            if (substr($this->dmailer['boundaryParts_html'][$bKey][0], 1) === 'END') {
                 $this->dmailer['boundaryParts_html'][$bKey][1] = $this->removeHTMLComments($this->dmailer['boundaryParts_html'][$bKey][1]);
             }
 
@@ -292,8 +292,8 @@ class Dmailer implements LoggerAwareInterface
             $this->dmailer['boundaryParts_plain'][$bKey] = explode('-->', $bContent, 2);
         }
 
-        $this->flagHtml     = ($this->theParts['html']['content'] ?? false) ? true : false;
-        $this->flagPlain    = ($this->theParts['plain']['content'] ?? false) ? true : false;
+        $this->flagHtml     = $this->theParts['html']['content'] ?? false;
+        $this->flagPlain    = $this->theParts['plain']['content'] ?? false;
         $this->includeMedia = $row['includeMedia'];
     }
 
@@ -307,8 +307,8 @@ class Dmailer implements LoggerAwareInterface
     protected function removeHTMLComments(string $content): string
     {
         $content = preg_replace('/\/\*<!\[CDATA\[\*\/[\t\v\n\r\f]*<!--/', '/*<![CDATA[*/', $content);
-        $content = preg_replace('/[\t\v\n\r\f]*<!(?:--[^\[\<\>][\s\S]*?--\s*)?>[\t\v\n\r\f]*/', '', $content);
-        return preg_replace('/\/\*<!\[CDATA\[\*\//', '/*<![CDATA[*/<!--', $content);
+        $content = preg_replace('/[\t\v\n\r\f]*<!(?:--[^\[\<\>][\s\S]*?--\s*)?>[\t\v\n\r\f]*/', '', (string)$content);
+        return preg_replace('/\/\*<!\[CDATA\[\*\//', '/*<![CDATA[*/<!--', (string)$content);
     }
 
     /**
@@ -360,7 +360,7 @@ class Dmailer implements LoggerAwareInterface
 
         // Workaround for strict checking of email addresses in TYPO3
         // (trailing newline = invalid address)
-        $recipientRow['email'] = trim($recipientRow['email']);
+        $recipientRow['email'] = trim((string)$recipientRow['email']);
 
         // check if the email valids
         if (GeneralUtility::validEmail($recipientRow['email'])) {
@@ -389,7 +389,7 @@ class Dmailer implements LoggerAwareInterface
             }
 
             $this->theParts['html']['content'] = '';
-            if ($this->flagHtml && (($recipientRow['module_sys_dmail_html'] ?? false) || $tableNameChar == 'P')) {
+            if ($this->flagHtml && (($recipientRow['module_sys_dmail_html'] ?? false) || $tableNameChar === 'P')) {
                 if (!isset($recipientRow['sys_dmail_categories_list'])) {
                     $recipientRow['sys_dmail_categories_list'] = '';
                 }
@@ -406,7 +406,7 @@ class Dmailer implements LoggerAwareInterface
                 $tempContentPlain = $this->getBoundaryParts($this->dmailer['boundaryParts_plain'], $recipientRow['sys_dmail_categories_list'] ?? '');
                 if ($this->mailHasContent) {
                     $tempContentPlain = $this->replaceMailMarkers($tempContentPlain, $recipientRow, $additionalMarkers);
-                    if (trim($this->dmailer['sys_dmail_rec']['use_rdct']) || trim($this->dmailer['sys_dmail_rec']['long_link_mode'])) {
+                    if (trim((string)$this->dmailer['sys_dmail_rec']['use_rdct']) || trim((string)$this->dmailer['sys_dmail_rec']['long_link_mode'])) {
                         $tempContentPlain = DirectMailUtility::substUrlsInPlainText(
                             $tempContentPlain,
                             $this->dmailer['sys_dmail_rec']['long_link_mode'] ? 'all' : '76',
@@ -421,13 +421,13 @@ class Dmailer implements LoggerAwareInterface
             $this->TYPO3MID = $midRidId . '-' . md5($midRidId);
             $this->dmailer['sys_dmail_rec']['return_path'] = str_replace('###XID###', $midRidId, $this->dmailer['sys_dmail_rec']['return_path']);
 
-            if ($returnCode) {
+            if ($returnCode !== 0) {
                 $recipientName = $recipientRow['name'] ?? '';
-                if ($recipientName == '') {
-                    if ($recipientRow['first_name'] ?? '') {
+                if ($recipientName === '') {
+                    if (($recipientRow['first_name'] ?? '') !== '' && ($recipientRow['first_name'] ?? '') !== '0') {
                         $recipientName = $recipientRow['first_name'] . ' ';
                     }
-                    if ($recipientRow['middle_name'] ?? '') {
+                    if (($recipientRow['middle_name'] ?? '') !== '' && ($recipientRow['middle_name'] ?? '') !== '0') {
                         $recipientName .= $recipientRow['middle_name'] . ' ';
                     }
                     $recipientName .= $recipientRow['last_name'] ?? '';
@@ -474,21 +474,21 @@ class Dmailer implements LoggerAwareInterface
         $this->mailHasContent = false;
         $boundaryMax = count($cArray) - 1;
         foreach ($cArray as $bKey => $cP) {
-            $key = substr($cP[0], 1);
+            $key = substr((string)$cP[0], 1);
             $isSubscribed = false;
-            $cP['mediaList'] = $cP['mediaList'] ?? '';
+            $cP['mediaList'] ??= '';
             if (!$key || ($userCategories === -1)) {
                 $returnVal .= $cP[1];
                 //$this->mediaList .= $cP['mediaList'];
                 if ($cP[1]) {
                     $this->mailHasContent = true;
                 }
-            } elseif ($key == 'END') {
+            } elseif ($key === 'END') {
                 $returnVal .= $cP[1];
                 //$this->mediaList .= $cP['mediaList'];
                 // There is content and it is not just the header and footer content,
                 // or it is the only content because we have no direct mail boundaries.
-                if (($cP[1] && !($bKey == 0 || $bKey == $boundaryMax)) || count($cArray) == 1) {
+                if (($cP[1] && ($bKey != 0 && $bKey != $boundaryMax)) || count($cArray) === 1) {
                     $this->mailHasContent = true;
                 }
             } else {
@@ -557,17 +557,11 @@ class Dmailer implements LoggerAwareInterface
                 if (is_array($listArr)) {
                     $ct = 0;
                     // Find tKey
-                    switch ($table) {
-                        case 'tt_address':
-                        case 'fe_users':
-                            $tKey = substr($table, 0, 1);
-                            break;
-                        case 'PLAINLIST':
-                            $tKey = 'P';
-                            break;
-                        default:
-                            $tKey = 'u';
-                    }
+                    $tKey = match ($table) {
+                        'tt_address', 'fe_users' => substr($table, 0, 1),
+                        'PLAINLIST' => 'P',
+                        default => 'u',
+                    };
 
                     // Send mails
                     $sendIds = GeneralUtility::makeInstance(SysDmailMaillogRepository::class)->dmailerGetSentMails((int)$mid, $tKey);
@@ -588,7 +582,7 @@ class Dmailer implements LoggerAwareInterface
                         }
                     } else {
                         $idList = implode(',', $listArr);
-                        if ($idList) {
+                        if ($idList !== '' && $idList !== '0') {
                             $rows = GeneralUtility::makeInstance(TempRepository::class)->selectForMasssendList($table, $idList, ($this->sendPerCycle + 1), $sendIds);
                             if ($rows && count($rows)) {
                                 foreach ($rows as $recipRow) {
@@ -727,7 +721,7 @@ class Dmailer implements LoggerAwareInterface
 
         $this->logger->debug($subject . ': ' . $message);
 
-        if ($this->notificationJob === true) {
+        if ($this->notificationJob) {
             $fromName = $this->getCharsetConverter()->conv($this->fromName, $this->charset, $this->backendCharset) ?? '';
 
             $mail = GeneralUtility::makeInstance(MailMessage::class);
@@ -811,11 +805,11 @@ class Dmailer implements LoggerAwareInterface
         // Sets the message id
         $host = $this->getHostname();
         if (!$host || $host == '127.0.0.1' || $host == 'localhost' || $host == 'localhost.localdomain') {
-            $host = ($GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'] ? preg_replace('/[^A-Za-z0-9_\-]/', '_', $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename']) : 'localhost') . '.TYPO3';
+            $host = ($GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'] ? preg_replace('/[^A-Za-z0-9_\-]/', '_', (string)$GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename']) : 'localhost') . '.TYPO3';
         }
 
         $idLeft = time() . '.' . uniqid();
-        $idRight = !empty($host) ? $host : 'symfony.generated';
+        $idRight = empty($host) ? 'symfony.generated' : $host;
         $this->messageid = $idLeft . '@' . $idRight;
 
         // Default line break for Unix systems.
@@ -850,9 +844,9 @@ class Dmailer implements LoggerAwareInterface
                             $mailer->embed($fp, basename($media['absRef']));
                         }
                     } else {
-                        $mailer->embed(GeneralUtility::makeInstance(FetchUtility::class)->getContents($media['absRef']), basename($media['absRef']));
+                        $mailer->embed(GeneralUtility::makeInstance(FetchUtility::class)->getContents($media['absRef']), basename((string)$media['absRef']));
                     }
-                    $this->theParts['html']['content'] = str_replace($media['subst_str'], 'cid:' . basename($media['absRef']), $this->theParts['html']['content']);
+                    $this->theParts['html']['content'] = str_replace($media['subst_str'], 'cid:' . basename((string)$media['absRef']), $this->theParts['html']['content']);
                 }
             }
             // remove ` do_not_embed="1"` attributes
@@ -887,7 +881,7 @@ class Dmailer implements LoggerAwareInterface
             ->subject($this->subject)
             ->priority($this->priority);
 
-        if ($this->replyToEmail) {
+        if ($this->replyToEmail !== '' && $this->replyToEmail !== '0') {
             $mailer->replyTo($this->createRecipient($this->replyToEmail, $this->replyToName));
         } else {
             $mailer->replyTo($this->createRecipient($this->fromEmail, $this->fromName));
@@ -903,11 +897,11 @@ class Dmailer implements LoggerAwareInterface
         // setting additional header
         // organization and TYPO3MID
         $header = $mailer->getHeaders();
-        if ($this->TYPO3MID) {
+        if ($this->TYPO3MID !== '' && $this->TYPO3MID !== '0') {
             $header->addTextHeader('X-TYPO3MID', $this->TYPO3MID);
         }
 
-        if ($this->organisation) {
+        if ($this->organisation !== '' && $this->organisation !== '0') {
             $header->addTextHeader('Organization', $this->organisation);
         }
 
@@ -970,7 +964,7 @@ class Dmailer implements LoggerAwareInterface
             }
 
             $user = '';
-            if (!empty($urlPart['user'])) {
+            if (isset($urlPart['user']) && ($urlPart['user'] !== '' && $urlPart['user'] !== '0')) {
                 $user = $urlPart['user'];
                 if (!empty($urlPart['pass'])) {
                     $user .= ':' . $urlPart['pass'];
@@ -1000,13 +994,13 @@ class Dmailer implements LoggerAwareInterface
             if ($val['no_jumpurl'] ?? false) {
                 // A tag attribute "no_jumpurl=1" allows to disable jumpurl for custom links
                 $substVal = $val['absRef'];
-            } elseif ($this->jumperURLPrefix && ($val['tag'] != 'form') && (!strstr($val['ref'], 'mailto:'))) {
+            } elseif ($this->jumperURLPrefix && ($val['tag'] != 'form') && (!strstr((string)$val['ref'], 'mailto:'))) {
                 // Form elements cannot use jumpurl!
                 $substVal = $this->jumperURLPrefix;
-                $substVal .= $this->jumperURLUseId ? $urlId : str_replace('%2F', '/', rawurlencode($val['absRef']));
-            } elseif (strstr($val['ref'], 'mailto:') && $this->jumperURLUseMailto) {
+                $substVal .= $this->jumperURLUseId ? $urlId : str_replace('%2F', '/', rawurlencode((string)$val['absRef']));
+            } elseif (strstr((string)$val['ref'], 'mailto:') && $this->jumperURLUseMailto) {
                 $substVal = $this->jumperURLPrefix;
-                $substVal .= $this->jumperURLUseId ? $urlId : str_replace('%2F', '/', rawurlencode($val['absRef']));
+                $substVal .= $this->jumperURLUseId ? $urlId : str_replace('%2F', '/', rawurlencode((string)$val['absRef']));
             } else {
                 $substVal = $val['absRef'];
             }
@@ -1110,12 +1104,12 @@ class Dmailer implements LoggerAwareInterface
         $imageList = '';
 
         // split the document by the beginning of the above tags
-        $codepieces = preg_split($attribRegex, $htmlContent);
+        $codepieces = preg_split($attribRegex, (string)$htmlContent);
         $len = strlen($codepieces[0]);
         $pieces = count($codepieces);
         $reg = [];
         for ($i = 1; $i < $pieces; $i++) {
-            $tag = strtolower(strtok(substr($htmlContent, $len + 1, 10), ' '));
+            $tag = strtolower(strtok(substr((string)$htmlContent, $len + 1, 10), ' '));
             $len += strlen($tag) + strlen($codepieces[$i]) + 2;
             preg_match('/[^>]*/', $codepieces[$i], $reg);
 
@@ -1127,7 +1121,7 @@ class Dmailer implements LoggerAwareInterface
             $imageData['ref'] = ($attributes['src'] ?? $attributes['background'] ?? '');
             if ($imageData['ref']) {
                 // find out if the value had quotes around it
-                $imageData['quotes'] = (substr($codepieces[$i], strpos($codepieces[$i], $imageData['ref']) - 1, 1) == '"') ? '"' : '';
+                $imageData['quotes'] = (substr($codepieces[$i], strpos($codepieces[$i], (string)$imageData['ref']) - 1, 1) === '"') ? '"' : '';
                 // subst_str is the string to look for, when substituting lateron
                 $imageData['subst_str'] = $imageData['quotes'] . $imageData['ref'] . $imageData['quotes'];
                 if ($imageData['ref'] && !strstr($imageList, '|' . $imageData['subst_str'] . '|')) {
@@ -1144,18 +1138,18 @@ class Dmailer implements LoggerAwareInterface
         // Extracting stylesheets
         $attribRegex = $this->tag_regex(['link']);
         // Split the document by the beginning of the above tags
-        $codepieces = preg_split($attribRegex, $htmlContent);
+        $codepieces = preg_split($attribRegex, (string)$htmlContent);
         $pieces = count($codepieces);
         for ($i = 1; $i < $pieces; $i++) {
             preg_match('/[^>]*/', $codepieces[$i], $reg);
             // fetches the attributes for the tag
             $attributes = $this->get_tag_attributes($reg[0]);
             $imageData = [];
-            if (strtolower($attributes['rel']) == 'stylesheet' && $attributes['href']) {
+            if (strtolower((string)$attributes['rel']) === 'stylesheet' && $attributes['href']) {
                 // Finds the src or background attribute
                 $imageData['ref'] = $attributes['href'];
                 // Finds out if the value had quotes around it
-                $imageData['quotes'] = (substr($codepieces[$i], strpos($codepieces[$i], $imageData['ref']) - 1, 1) == '"') ? '"' : '';
+                $imageData['quotes'] = (substr($codepieces[$i], strpos($codepieces[$i], (string)$imageData['ref']) - 1, 1) === '"') ? '"' : '';
                 // subst_str is the string to look for, when substituting lateron
                 $imageData['subst_str'] = $imageData['quotes'] . $imageData['ref'] . $imageData['quotes'];
                 if ($imageData['ref'] && !strstr($imageList, '|' . $imageData['subst_str'] . '|')) {
@@ -1167,7 +1161,7 @@ class Dmailer implements LoggerAwareInterface
         }
 
         // fixes javascript rollovers
-        $codepieces = explode('.src', $htmlContent);
+        $codepieces = explode('.src', (string)$htmlContent);
         $pieces = count($codepieces);
         $expr = '/^[^' . quotemeta('"') . quotemeta("'") . ']*/';
         for ($i = 1; $i < $pieces; $i++) {
@@ -1180,12 +1174,10 @@ class Dmailer implements LoggerAwareInterface
             $imageData['subst_str'] = $imageData['quotes'] . $imageData['ref'] . $imageData['quotes'];
             $theInfo = GeneralUtility::split_fileref($imageData['ref']);
 
-            if (in_array($theInfo['fileext'], ['gif', 'jpeg', 'jpg'])) {
-                if ($imageData['ref'] && !strstr($imageList, '|' . $imageData['subst_str'] . '|')) {
-                    $imageList .= '|' . $imageData['subst_str'] . '|';
-                    $imageData['absRef'] = $this->absRef($imageData['ref']);
-                    $this->theParts['html']['media'][] = $imageData;
-                }
+            if (in_array($theInfo['fileext'], ['gif', 'jpeg', 'jpg']) && ($imageData['ref'] && !strstr($imageList, '|' . $imageData['subst_str'] . '|'))) {
+                $imageList .= '|' . $imageData['subst_str'] . '|';
+                $imageData['absRef'] = $this->absRef($imageData['ref']);
+                $this->theParts['html']['media'][] = $imageData;
             }
         }
     }
@@ -1201,11 +1193,11 @@ class Dmailer implements LoggerAwareInterface
         $attribRegex = $this->tag_regex(['a', 'form', 'area']);
 
         // Splits the document by the beginning of the above tags
-        $codepieces = preg_split($attribRegex, $htmlContent);
+        $codepieces = preg_split($attribRegex, (string)$htmlContent);
         $len = strlen($codepieces[0]);
         $pieces = count($codepieces);
         for ($i = 1; $i < $pieces; $i++) {
-            $tag = strtolower(strtok(substr($htmlContent, $len + 1, 10), ' '));
+            $tag = strtolower(strtok(substr((string)$htmlContent, $len + 1, 10), ' '));
             $len += strlen($tag) + strlen($codepieces[$i]) + 2;
 
             preg_match('/[^>]*/', $codepieces[$i], $reg);
@@ -1213,29 +1205,29 @@ class Dmailer implements LoggerAwareInterface
             $attributes = $this->get_tag_attributes($reg[0], false);
             $hrefData = [];
             $hrefData['ref'] = ($attributes['href'] ?? '') ?: ($attributes['action'] ?? '');
-            $quotes = (substr($hrefData['ref'], 0, 1) === '"') ? '"' : '';
+            $quotes = (str_starts_with($hrefData['ref'], '"')) ? '"' : '';
             $hrefData['ref'] = trim($hrefData['ref'], '"');
-            if ($hrefData['ref']) {
+            if ($hrefData['ref'] !== '' && $hrefData['ref'] !== '0') {
                 // Finds out if the value had quotes around it
                 $hrefData['quotes'] = $quotes;
                 // subst_str is the string to look for when substituting later on
                 $hrefData['subst_str'] = $quotes . $hrefData['ref'] . $quotes;
-                if ($hrefData['ref'] && substr(trim($hrefData['ref']), 0, 1) != '#' && !strstr($linkList, '|' . $hrefData['subst_str'] . '|')) {
+                if ($hrefData['ref'] && !str_starts_with(trim($hrefData['ref']), '#') && !strstr($linkList, '|' . $hrefData['subst_str'] . '|')) {
                     $linkList .= '|' . $hrefData['subst_str'] . '|';
                     $hrefData['absRef'] = $this->absRef($hrefData['ref']);
                     $hrefData['tag'] = $tag;
-                    $hrefData['no_jumpurl'] = (int)(trim(($attributes['no_jumpurl'] ?? ''), '"')) ? 1 : 0;
+                    $hrefData['no_jumpurl'] = (int)(trim(($attributes['no_jumpurl'] ?? ''), '"')) !== 0 ? 1 : 0;
                     $this->theParts['html']['hrefs'][] = $hrefData;
                 }
             }
         }
         // Extracts TYPO3 specific links made by the openPic() JS function
-        $codepieces = explode("onClick=\"openPic('", $htmlContent);
+        $codepieces = explode("onClick=\"openPic('", (string)$htmlContent);
         $pieces = count($codepieces);
         for ($i = 1; $i < $pieces; $i++) {
             $showpicArray = explode("'", $codepieces[$i]);
             $hrefData['ref'] = $showpicArray[0];
-            if ($hrefData['ref']) {
+            if ($hrefData['ref'] !== '' && $hrefData['ref'] !== '0') {
                 $hrefData['quotes'] = "'";
                 // subst_str is the string to look for, when substituting lateron
                 $hrefData['subst_str'] = $hrefData['quotes'] . $hrefData['ref'] . $hrefData['quotes'];
@@ -1269,7 +1261,7 @@ class Dmailer implements LoggerAwareInterface
         if (strpos(' ' . $htmlCode, '<frame ')) {
             $attribRegex = $this->tag_regex(['frame']);
             // Splits the document by the beginning of the above tags
-            $codepieces = preg_split($attribRegex, $htmlCode, 1000000);
+            $codepieces = preg_split($attribRegex, (string)$htmlCode, 1000000);
             $pieces = count($codepieces);
             for ($i = 1; $i < $pieces; $i++) {
                 preg_match('/[^>]*/', $codepieces[$i], $reg);
@@ -1304,7 +1296,7 @@ class Dmailer implements LoggerAwareInterface
         $c = count($tags);
         foreach ($tags as $tag) {
             $c--;
-            $regexp .= '<' . $tag . '[[:space:]]' . (($c) ? '|' : '');
+            $regexp .= '<' . $tag . '[[:space:]]' . (($c !== 0) ? '|' : '');
         }
         return $regexp . '/i';
     }
@@ -1323,7 +1315,7 @@ class Dmailer implements LoggerAwareInterface
     protected function get_tag_attributes(string $tag, bool $removeQuotes = true): array
     {
         $attributes = [];
-        $tag = ltrim(preg_replace('/^<[^ ]*/', '', trim($tag)));
+        $tag = ltrim((string)preg_replace('/^<[^ ]*/', '', trim($tag)));
         $tagLen = strlen($tag);
         $safetyCounter = 100;
         // Find attribute
@@ -1333,9 +1325,9 @@ class Dmailer implements LoggerAwareInterface
             $attrib = $reg[0];
 
             $tag = ltrim(substr($tag, strlen($attrib), $tagLen));
-            if (substr($tag, 0, 1) === '=') {
+            if (str_starts_with($tag, '=')) {
                 $tag = ltrim(substr($tag, 1, $tagLen));
-                if (substr($tag, 0, 1) === '"' && $removeQuotes) {
+                if (str_starts_with($tag, '"') && $removeQuotes) {
                     // Quotes around the value
                     $reg = explode('"', substr($tag, 1, $tagLen), 2);
                     $tag = ltrim($reg[1]);
@@ -1345,7 +1337,7 @@ class Dmailer implements LoggerAwareInterface
                     preg_match('/^([^[:space:]>]*)(.*)/', $tag, $reg);
                     $value = trim($reg[1]);
                     $tag = ltrim($reg[2]);
-                    if (substr($tag, 0, 1) === '>') {
+                    if (str_starts_with($tag, '>')) {
                         $tag = '';
                     }
                 }
@@ -1376,19 +1368,17 @@ class Dmailer implements LoggerAwareInterface
             // do nothing
         } elseif (preg_match('/^\//', $ref)) {
             // if ref is an absolute link
-            $addr = parse_url($this->theParts['html']['path']);
+            $addr = parse_url((string)$this->theParts['html']['path']);
             $ref = $addr['scheme'] . '://' . $addr['host'] . (($addr['port'] ?? false) ? ':' . $addr['port'] : '') . $ref;
-        } else {
+        } elseif (str_ends_with((string)$this->theParts['html']['path'], '/')) {
             // If the reference is relative, the path is added,
             // in order for us to fetch the content
-            if (substr($this->theParts['html']['path'], -1) == '/') {
-                // if the last char is a /, then prepend the ref
-                $ref = $this->theParts['html']['path'] . $ref;
-            } else {
-                // if the last char not a /, then assume it's an absolute
-                $addr = parse_url($this->theParts['html']['path']);
-                $ref = $addr['scheme'] . '://' . $addr['host'] . ($addr['port'] ? ':' . $addr['port'] : '') . '/' . $ref;
-            }
+            // if the last char is a /, then prepend the ref
+            $ref = $this->theParts['html']['path'] . $ref;
+        } else {
+            // if the last char not a /, then assume it's an absolute
+            $addr = parse_url((string)$this->theParts['html']['path']);
+            $ref = $addr['scheme'] . '://' . $addr['host'] . ($addr['port'] !== 0 ? ':' . $addr['port'] : '') . '/' . $ref;
         }
 
         return $ref;
@@ -1453,7 +1443,7 @@ class Dmailer implements LoggerAwareInterface
 
     protected function ensureCorrectEncoding(string $inputString): string
     {
-        if ($inputString) {
+        if ($inputString !== '' && $inputString !== '0') {
             return $this
                 ->getCharsetConverter()
                 ->conv(

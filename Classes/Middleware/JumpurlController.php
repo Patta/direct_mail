@@ -114,7 +114,7 @@ class JumpurlController implements MiddlewareInterface
                     $this->performFeUserAutoLogin();
                 }
                 // jumpUrl generation failed. Early exit here
-                if (empty($jumpurl)) {
+                if ($jumpurl === '' || $jumpurl === '0') {
                     die('Error: No further link. Please report error to the mail sender.');
                 }
             } else {
@@ -203,7 +203,7 @@ class JumpurlController implements MiddlewareInterface
                     $targetUrl = $mailContent['plain']['link_ids'][abs($targetIndex)];
                 }
             }
-            $targetUrl = htmlspecialchars_decode(urldecode($targetUrl));
+            $targetUrl = htmlspecialchars_decode(urldecode((string)$targetUrl));
         }
         return $targetUrl;
     }
@@ -219,7 +219,7 @@ class JumpurlController implements MiddlewareInterface
         // is the DB table name and the second part the UID of the record in the DB table
         $recipientTable = '';
         $recipientUid = 0;
-        if (!empty($combinedRecipient)) {
+        if ($combinedRecipient !== '' && $combinedRecipient !== '0') {
             [$recipientTable, $recipientUid] = explode('_', $combinedRecipient);
         }
 

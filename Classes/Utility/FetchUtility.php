@@ -51,7 +51,7 @@ class FetchUtility
         try {
             $respose = $this->getResponse($url);
             return (string)$respose->getBody()->getContents();
-        } catch (\Exception $e) {
+        } catch (\Exception) {
         }
         return '';
     }

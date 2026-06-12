@@ -36,6 +36,7 @@ use TYPO3\CMS\Fluid\View\StandaloneView;
 
 class MainController
 {
+    public $requestUri;
     /**
      * ModuleTemplate Container
      *
@@ -103,7 +104,7 @@ class MainController
         $this->perms_clause = $this->getBackendUser()->getPagePermsClause(Permission::PAGE_SHOW);
         $pageAccess = BackendUtility::readPageAccess($this->id, $this->perms_clause);
         $this->pageinfo = is_array($pageAccess) ? $pageAccess : [];
-        $this->access = is_array($this->pageinfo) ? true : false;
+        $this->access = is_array($this->pageinfo);
 
         // get the config from pageTS
         $this->params = BackendUtility::getPagesTSconfig($this->id)['mod.']['web_modules.']['dmail.'] ?? [];
@@ -117,7 +118,7 @@ class MainController
         //$this->sys_language_uid = 0; //@TODO
 
         if ($this->updatePageTree) {
-            \TYPO3\CMS\Backend\Utility\BackendUtility::setUpdateSignal('updatePageTree');
+            BackendUtility::setUpdateSignal('updatePageTree');
         }
     }
 
@@ -128,10 +129,10 @@ class MainController
     protected function configureTemplatePaths(string $templateName): StandaloneView
     {
         $view = GeneralUtility::makeInstance(StandaloneView::class);
-        $view->setTemplateRootPaths(['EXT:direct_mail/Resources/Private/Templates/']);
-        $view->setPartialRootPaths(['EXT:direct_mail/Resources/Private/Partials/']);
-        $view->setLayoutRootPaths(['EXT:direct_mail/Resources/Private/Layouts/']);
-        $view->setTemplate($templateName);
+        $view->getRenderingContext()->getTemplatePaths()->setTemplateRootPaths(['EXT:direct_mail/Resources/Private/Templates/']);
+        $view->getRenderingContext()->getTemplatePaths()->setPartialRootPaths(['EXT:direct_mail/Resources/Private/Partials/']);
+        $view->getRenderingContext()->getTemplatePaths()->setLayoutRootPaths(['EXT:direct_mail/Resources/Private/Layouts/']);
+        $view->getRenderingContext()->setControllerAction($templateName);
         return $view;
     }
 
@@ -363,8 +364,8 @@ class MainController
                 $output['rows'][] = [
                     'icon' => $tableIcon,
                     'editLink' => $editLink,
-                    'email' => $isAllowedDisplayTable ? htmlspecialchars($row['email']) : $notAllowedPlaceholder,
-                    'name' => $isAllowedDisplayTable ? htmlspecialchars($name) : '',
+                    'email' => $isAllowedDisplayTable ? htmlspecialchars((string)$row['email']) : $notAllowedPlaceholder,
+                    'name' => $isAllowedDisplayTable ? htmlspecialchars((string)$name) : '',
                 ];
             }
         }
@@ -378,7 +379,7 @@ class MainController
      *
      * @param array $params
      * @return Uri
-     * @throws \TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException
+     * @throws RouteNotFoundException
      */
     protected function getEditOnClickLink(array $params): Uri
     {
@@ -398,7 +399,7 @@ class MainController
         $out = [];
         $c = 0;
         foreach ($plainMails as $v) {
-            $out[$c]['email'] = trim($v);
+            $out[$c]['email'] = trim((string)$v);
             $out[$c]['name'] = '';
             $c++;
         }
@@ -429,7 +430,7 @@ class MainController
          * 		],
          * ];
          */
-        return array_map('unserialize', array_unique(array_map('serialize', $plainlist)));
+        return array_map(unserialize(...), array_unique(array_map(serialize(...), $plainlist)));
     }
 
     /**
@@ -444,7 +445,7 @@ class MainController
         $getLevels = 10000;
         // Finding tree and offer setting of values recursively.
         $tree = GeneralUtility::makeInstance(PageTreeView::class);
-        $tree->init(empty($perms_clause) ? '' : 'AND ' . $perms_clause);
+        $tree->init($perms_clause === '' || $perms_clause === '0' ? '' : 'AND ' . $perms_clause);
         $tree->makeHTML = 0;
         $tree->setRecs = 0;
         $tree->getTree($id, $getLevels, '');

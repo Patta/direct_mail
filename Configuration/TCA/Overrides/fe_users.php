@@ -1,5 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
+use DirectMailTeam\DirectMail\SelectCategories;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+
 defined('TYPO3') || die();
 
 // fe_users modified
@@ -21,7 +26,7 @@ $feUsersCols = [
             'foreign_table' => 'sys_dmail_category',
             // TCEFORM.fe_users.module_sys_dmail_category.PAGE_TSCONFIG_IDLIST = ids
             'foreign_table_where' => 'AND sys_dmail_category.l18n_parent=0 AND sys_dmail_category.pid IN (###PAGE_TSCONFIG_IDLIST###) ORDER BY sys_dmail_category.sorting',
-            'itemsProcFunc' => DirectMailTeam\DirectMail\SelectCategories::class . '->getLocalizedCategories',
+            'itemsProcFunc' => SelectCategories::class . '->getLocalizedCategories',
             'itemsProcFunc_config' => [
                 'table' => 'sys_dmail_category',
                 'indexField' => 'uid',
@@ -41,5 +46,5 @@ $feUsersCols = [
     ],
 ];
 
-TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns('fe_users', $feUsersCols);
-TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCATypes('fe_users', '--div--;Direct mail,module_sys_dmail_newsletter,module_sys_dmail_category,module_sys_dmail_html');
+ExtensionManagementUtility::addTCAcolumns('fe_users', $feUsersCols);
+ExtensionManagementUtility::addToAllTCATypes('fe_users', '--div--;Direct mail,module_sys_dmail_newsletter,module_sys_dmail_category,module_sys_dmail_html');

@@ -47,17 +47,15 @@ class SelectCategories
             }
         }
 
-        if (is_array($params['items']) && !empty($params['items'])) {
+        if (is_array($params['items']) && (isset($params['items']) && $params['items'] !== [])) {
             $table = (string)$params['config']['itemsProcFunc_config']['table'];
             $tempRepository = GeneralUtility::makeInstance(TempRepository::class);
             foreach ($params['items'] as $k => $item) {
                 $rows = $tempRepository->selectRowsByUid($table, (int)$item[1]);
                 if (is_array($rows)) {
                     foreach ($rows as $rowCat) {
-                        if ($localizedRowCat = $tempRepository->getRecordOverlay($table, $rowCat, $sysLanguageUid)) {
-                            if (count($localizedRowCat)) {
-                                $params['items'][$k][0] = $localizedRowCat['category'];
-                            }
+                        if (($localizedRowCat = $tempRepository->getRecordOverlay($table, $rowCat, $sysLanguageUid)) && count($localizedRowCat)) {
+                            $params['items'][$k][0] = $localizedRowCat['category'];
                         }
                     }
                 }
@@ -69,7 +67,7 @@ class SelectCategories
     {
         //initialize backend user language
         $languageService = $this->getLanguageService();
-        return $languageService->lang == 'default' ? 'en' : $languageService->lang;
+        return $languageService->lang === 'default' ? 'en' : $languageService->lang;
     }
 
     /**

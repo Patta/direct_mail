@@ -22,7 +22,7 @@ class AuthCodeUtility
         array $recipientRecord,
         string $authcodeFieldList = 'uid'
     ): bool {
-        if (!empty($submittedAuthCode)) {
+        if ($submittedAuthCode !== '' && $submittedAuthCode !== '0') {
             $hmac = self::getHmac($recipientRecord, $authcodeFieldList);
             if ($submittedAuthCode === $hmac) {
                 return true;
@@ -34,7 +34,7 @@ class AuthCodeUtility
     public static function getHmac(array $recipientRecord, string $authcodeFieldList): string
     {
         $recCopy_temp = [];
-        if ($authcodeFieldList) {
+        if ($authcodeFieldList !== '' && $authcodeFieldList !== '0') {
             $fieldArr = GeneralUtility::trimExplode(',', $authcodeFieldList, true);
             foreach ($fieldArr as $k => $v) {
                 $recCopy_temp[$k] = $recipientRecord[$v] ?? '';

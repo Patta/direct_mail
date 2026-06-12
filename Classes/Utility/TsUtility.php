@@ -59,7 +59,7 @@ class TsUtility
             $set = [];
             foreach ($pageTs as $f => $v) {
                 // only get the first line of input and ignore the rest
-                $v = strtok(trim($v), "\r\n");
+                $v = strtok(trim((string)$v), "\r\n");
                 // if token is not found (false)
                 if ($v === false) {
                     // then set empty string
@@ -67,26 +67,26 @@ class TsUtility
                 }
                 $f = $tsConfPrefix . $f;
                 $tempF = isset($impParams[$f]) ? trim($impParams[$f]) : '';
-                if (strcmp($tempF, $v)) {
+                if (strcmp($tempF, $v) !== 0) {
                     $set[$f] = $v;
                 }
             }
             if (count($set)) {
                 // Get page record and TS config lines
                 $pRec = BackendUtility::getRecord('pages', $id);
-                $tsLines = explode(LF, $pRec['TSconfig'] ?: '');
+                $tsLines = explode(LF, (string)$pRec['TSconfig'] ?: '');
                 $tsLines = array_reverse($tsLines);
                 // Reset the set of changes.
                 foreach ($set as $f => $v) {
                     $inserted = 0;
                     foreach ($tsLines as $ki => $kv) {
-                        if (substr($kv, 0, strlen($f) + 1) == $f . '=') {
+                        if (substr($kv, 0, strlen($f) + 1) === $f . '=') {
                             $tsLines[$ki] = $f . '=' . $v;
                             $inserted = 1;
                             break;
                         }
                     }
-                    if (!$inserted) {
+                    if ($inserted === 0) {
                         $tsLines = array_reverse($tsLines);
                         $tsLines[] = $f . '=' . $v;
                         $tsLines = array_reverse($tsLines);

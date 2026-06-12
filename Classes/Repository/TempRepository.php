@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DirectMailTeam\DirectMail\Repository;
 
 use DirectMailTeam\DirectMail\DmQueryGenerator;
+use Doctrine\DBAL\ArrayParameterType;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
@@ -51,7 +52,7 @@ class TempRepository extends MainRepository
                     'uid',
                     $queryBuilder->createNamedParameter(
                         GeneralUtility::intExplode(',', $idlist),
-                        Connection::PARAM_INT_ARRAY
+                        ArrayParameterType::INTEGER
                     )
                 )
             )
@@ -90,7 +91,7 @@ class TempRepository extends MainRepository
                 $queryBuilder->expr()->and(
                     $queryBuilder->expr()->in(
                         $table . '.pid',
-                        $queryBuilder->createNamedParameter($pidArray, Connection::PARAM_INT_ARRAY)
+                        $queryBuilder->createNamedParameter($pidArray, ArrayParameterType::INTEGER)
                     ),
                     $queryBuilder->expr()->neq(
                         $table . '.email',
@@ -121,7 +122,7 @@ class TempRepository extends MainRepository
                 $queryBuilder->expr()->and(
                     $queryBuilder->expr()->in(
                         $table . '.pid',
-                        $queryBuilder->createNamedParameter($pidArray, Connection::PARAM_INT_ARRAY)
+                        $queryBuilder->createNamedParameter($pidArray, ArrayParameterType::INTEGER)
                     ),
                     $queryBuilder->expr()->eq(
                         'mm_1.uid_foreign',
@@ -239,7 +240,7 @@ class TempRepository extends MainRepository
         if ($group['query']) {
             $select = $queryGenerator->getQueryDM((bool)$group['queryLimitDisabled']);
             //$queryGenerator->extFieldLists['queryFields'] = 'uid';
-            if ($select) {
+            if ($select !== '' && $select !== '0') {
                 $connection = $this->getConnection($table);
                 $recipients = $connection->executeQuery($select)->fetchAllAssociative();
                 foreach ($recipients as $recipient) {
@@ -263,7 +264,7 @@ class TempRepository extends MainRepository
     {
         $categories = [];
 
-        $mmField = $table == 'sys_dmail_group' ? 'select_categories' : 'module_sys_dmail_category';
+        $mmField = $table === 'sys_dmail_group' ? 'select_categories' : 'module_sys_dmail_category';
         $tableSysDmailCategory = 'sys_dmail_category';
 
         $pageTsConfig = BackendUtility::getTCEFORM_TSconfig($table, $row);
@@ -281,7 +282,7 @@ class TempRepository extends MainRepository
                     ),
                     $queryBuilder->expr()->in(
                         $tableSysDmailCategory . '.pid',
-                        $queryBuilder->createNamedParameter($pidList, Connection::PARAM_INT_ARRAY)
+                        $queryBuilder->createNamedParameter($pidList, ArrayParameterType::INTEGER)
                     )
                 );
 
@@ -289,7 +290,7 @@ class TempRepository extends MainRepository
 
                 while ($rowCat = $res->fetchAssociative()) {
                     if ($localizedRowCat = $this->getRecordOverlay($tableSysDmailCategory, $rowCat, $sysLanguageUid)) {
-                        $categories[$localizedRowCat['uid']] = htmlspecialchars($localizedRowCat['category']);
+                        $categories[$localizedRowCat['uid']] = htmlspecialchars((string)$localizedRowCat['category']);
                     }
                 }
             }
@@ -354,7 +355,7 @@ class TempRepository extends MainRepository
 
                         // Merge record content by traversing all fields:
                         if (is_array($olrow)) {
-                            foreach ($row as $fN => $fV) {
+                            foreach (array_keys($row) as $fN) {
                                 if ($fN != 'uid' && $fN != 'pid' && isset($olrow[$fN])) {
                                     if (!isset($tcaTable['l10n_mode'][$fN]) && strcmp(trim((string)$olrow[$fN]), '')) {
                                         $row[$fN] = $olrow[$fN];
@@ -372,12 +373,10 @@ class TempRepository extends MainRepository
                     } elseif ($sysLanguageUid != $row[$tcaTable['ctrl']['languageField']]) {
                         unset($row);
                     }
-                } else {
+                } elseif ($row[$tcaTable['ctrl']['languageField']] > 0) {
                     // When default language is displayed,
                     // we never want to return a record carrying another language!:
-                    if ($row[$tcaTable['ctrl']['languageField']] > 0) {
-                        unset($row);
-                    }
+                    unset($row);
                 }
             }
         }
@@ -405,7 +404,7 @@ class TempRepository extends MainRepository
 
     public function selectForMasssendList(string $table, string $idList, int $sendPerCycle, $sendIds)
     {
-        $sendIds = $sendIds ? $sendIds : 0; //@TODO
+        $sendIds = $sendIds ?: 0; //@TODO
         $queryBuilder = $this->getQueryBuilder($table);
 
         return $queryBuilder

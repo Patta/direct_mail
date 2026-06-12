@@ -117,7 +117,7 @@ class ReadmailUtility
      */
     public function getMessage(array $mailParts)
     {
-        if (preg_match('/^Content-Type: message\/delivery-status/', substr($mailParts['CONTENT'], 0, 5000))) {
+        if (preg_match('/^Content-Type: message\/delivery-status/', substr((string)$mailParts['CONTENT'], 0, 5000))) {
             // Don't break it, we're only looking for a reason
             $c = $mailParts['CONTENT'];
         } elseif ($mailParts['content-type']) {
@@ -168,7 +168,7 @@ class ReadmailUtility
         unset($mParts[0]);
         $new = [];
         foreach ($mParts as $val) {
-            if (trim($val) == '--') {
+            if (trim($val) === '--') {
                 break;
             }
             $new[] = ltrim($val);
@@ -194,7 +194,7 @@ class ReadmailUtility
         foreach ($parts as $ppstr) {
             $mparts = explode('=', $ppstr, 2);
             if (count($mparts) > 1) {
-                $cTypes[strtolower(trim($mparts[0]))] = preg_replace('/^"/', '', trim(preg_replace('/"$/', '', trim($mparts[1]))));
+                $cTypes[strtolower(trim($mparts[0]))] = preg_replace('/^"/', '', trim((string)preg_replace('/"$/', '', trim($mparts[1]))));
             } else {
                 $cTypes[] = $ppstr;
             }
@@ -226,7 +226,7 @@ class ReadmailUtility
             }
             $cp['content'] = trim($parts[0]);
             $parts = explode('>:', $cp['content'], 2);
-            $cp['reason_text'] = trim($parts[1]) ? trim($parts[1]) : $cp['content'];
+            $cp['reason_text'] = trim($parts[1]) !== '' && trim($parts[1]) !== '0' ? trim($parts[1]) : $cp['content'];
             $cp['mailserver'] = 'Qmail';
             $cp['reason'] = $this->extractReason($cp['reason_text']);
         } elseif (strstr($c, 'The Postfix program')) {
@@ -305,7 +305,7 @@ class ReadmailUtility
     public function decodeHeaderString($str)
     {
         $parts = explode('=?', $str, 2);
-        if (count($parts) == 2) {
+        if (count($parts) === 2) {
             [$charset, $encType, $encContent] = explode('?', $parts[1], 3);
             $subparts = explode('?=', $encContent, 2);
             $encContent = $subparts[0];
@@ -346,14 +346,10 @@ class ReadmailUtility
             $outArr['email'] = $reg[1];
             // Find name:
             [$namePart] = explode($reg[0], $str);
-            if (trim($namePart)) {
+            if (trim($namePart) !== '' && trim($namePart) !== '0') {
                 $reg = '';
                 preg_match('/"([^"]*)"/', $str, $reg);
-                if (trim($reg[1])) {
-                    $outArr['name'] = trim($reg[1]);
-                } else {
-                    $outArr['name'] = trim($namePart);
-                }
+                $outArr['name'] = trim($reg[1]) !== '' && trim($reg[1]) !== '0' ? trim($reg[1]) : trim($namePart);
             }
         }
         return $outArr;
@@ -376,7 +372,7 @@ class ReadmailUtility
         $outValue['_MIME_TYPE'] = $cTypeParts[0];
         reset($cTypeParts);
         next($cTypeParts);
-        while ([, $v] = each($cTypeParts)) {
+        foreach ($cTypeParts as $v) {
             $reg = '';
             preg_match('/([^=]*)="(.*)"/i', $v, $reg);
             if (trim($reg[1]) && trim($reg[2])) {
@@ -399,7 +395,7 @@ class ReadmailUtility
         $dateStr = count($dateParts) > 1 ? $dateParts[1] : $dateParts[0];
         $spaceParts = GeneralUtility::trimExplode(' ', $dateStr, 1);
         $spaceParts[1] = $this->dateAbbrevs[strtoupper($spaceParts[1])];
-        $timeParts = explode(':', $spaceParts[3]);
+        $timeParts = explode(':', (string)$spaceParts[3]);
         $timeStamp = mktime($timeParts[0], $timeParts[1], $timeParts[2], $spaceParts[1], $spaceParts[0], $spaceParts[2]);
         $offset = $this->getGMToffset($spaceParts[4]);
         // Compensates for GMT by subtracting the number of seconds which the date is offset from serverTime
@@ -417,7 +413,7 @@ class ReadmailUtility
     public function getGMToffset($GMT)
     {
         $GMToffset = (int)(substr($GMT, 1, 2)) * 60 + (int)(substr($GMT, 3, 2));
-        $GMToffset *= substr($GMT, 0, 1) == '+' ? 1 : -1;
+        $GMToffset *= str_starts_with($GMT, '+') ? 1 : -1;
         $GMToffset -= $this->serverGMToffsetMinutes;
         return $GMToffset;
     }
@@ -444,12 +440,12 @@ class ReadmailUtility
         $headers = [];
         $p = '';
         foreach ($lines as $k => $str) {
-            if (!trim($str)) {
+            if (trim($str) === '' || trim($str) === '0') {
                 break;
             }
             // Header finished
             $parts = explode(' ', $str, 2);
-            if ($parts[0] && substr($parts[0], -1) == ':') {
+            if ($parts[0] && str_ends_with($parts[0], ':')) {
                 $p = strtolower(substr($parts[0], 0, -1));
                 if (isset($headers[$p])) {
                     $headers[$p . '.'][] = $headers[$p];
@@ -500,12 +496,12 @@ class ReadmailUtility
         // Decode date from human-readable format to unix-time (includes compensation for GMT CET)
         $mailParts['_DATE'] = $this->makeUnixDate($mailParts['date']);
         // Transfer encodings of body content
-        switch (strtolower($mailParts['content-transfer-encoding'])) {
+        switch (strtolower((string)$mailParts['content-transfer-encoding'])) {
             case 'quoted-printable':
-                $mailParts['CONTENT'] = quoted_printable_decode($mailParts['CONTENT']);
+                $mailParts['CONTENT'] = quoted_printable_decode((string)$mailParts['CONTENT']);
                 break;
             case 'base64':
-                $mailParts['CONTENT'] = base64_decode($mailParts['CONTENT']);
+                $mailParts['CONTENT'] = base64_decode((string)$mailParts['CONTENT']);
                 break;
             default:
                 // do nothing
@@ -515,7 +511,7 @@ class ReadmailUtility
         // *************************
         // PROCESSING the CONTENT part of the mail (the body)
         // *************************
-        $cType = strtolower($mailParts['_CONTENT_TYPE_DAT']['_MIME_TYPE']);
+        $cType = strtolower((string)$mailParts['_CONTENT_TYPE_DAT']['_MIME_TYPE']);
         // Only looking for 'multipart' in string.
         $cType = substr($cType, 0, 9);
         switch ($cType) {
@@ -524,7 +520,7 @@ class ReadmailUtility
                     $contentSectionParts = GeneralUtility::trimExplode('--' . $mailParts['_CONTENT_TYPE_DAT']['boundary'], $mailParts['CONTENT'], 1);
                     $contentSectionParts_proc = [];
                     foreach ($contentSectionParts as $k => $v) {
-                        if (substr($v, 0, 2) == '--') {
+                        if (str_starts_with($v, '--')) {
                             break;
                         }
                         $contentSectionParts_proc[$k] = $this->fullParse($v);
@@ -535,8 +531,8 @@ class ReadmailUtility
                 }
                 break;
             default:
-                if (strtolower($mailParts['_CONTENT_TYPE_DAT']['charset']) == 'utf-8') {
-                    $mailParts['CONTENT'] = utf8_decode($mailParts['CONTENT']);
+                if (strtolower((string)$mailParts['_CONTENT_TYPE_DAT']['charset']) === 'utf-8') {
+                    $mailParts['CONTENT'] = mb_convert_encoding($mailParts['CONTENT'], 'ISO-8859-1');
                 }
         }
         return $mailParts;

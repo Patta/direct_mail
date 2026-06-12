@@ -51,11 +51,11 @@ final class ConfigurationController extends MainController
         $permsClause = $this->getBackendUser()->getPagePermsClause(Permission::PAGE_SHOW);
         $pageAccess = BackendUtility::readPageAccess($this->id, $permsClause);
         $this->pageinfo = is_array($pageAccess) ? $pageAccess : [];
-        $this->access = is_array($this->pageinfo) ? true : false;
+        $this->access = is_array($this->pageinfo);
 
         $normalizedParams = $request->getAttribute('normalizedParams');
         $this->pageTS = $parsedBody['pageTS'] ?? $queryParams['pageTS'] ?? [];
-        $this->submit = isset($parsedBody['submit']) ? true : false;
+        $this->submit = isset($parsedBody['submit']);
 
         foreach (['includeMedia', 'flowedFormat', 'use_rdct', 'long_link_mode', 'enable_jump_url', 'jumpurl_tracking_privacy', 'enable_mailto_jump_url', 'showContentTitle', 'prependContentTitle'] as $checkboxName) {
             if (!isset($this->pageTS[$checkboxName])) {
@@ -86,7 +86,7 @@ final class ConfigurationController extends MainController
                         'implodedParams' => $this->implodedParams,
                         'uid' => $this->id,
                     ]);
-                } elseif ($this->id != 0) {
+                } elseif ($this->id !== 0) {
                     $message = $this->createFlashMessage(
                         $this->languageService->sL($this->lllFile . ':dmail_noRegular'),
                         $this->languageService->sL($this->lllFile . ':dmail_newsletters'),
@@ -139,40 +139,33 @@ final class ConfigurationController extends MainController
         $this->pageinfo = is_array($pageAccess) ? $pageAccess : [];
         $this->access = is_array($this->pageinfo);
 
-        if (($this->id && $this->access) || ($this->isAdmin() && !$this->id)) {
-            if ($this->getBackendUser()->doesUserHaveAccess(BackendUtility::getRecord('pages', $this->id), 2)) {
-                $this->languageService = $this->getLanguageService();
-                $this->pageTS = $request->getParsedBody()['pageTS'] ?? [];
-
-                foreach (['includeMedia', 'flowedFormat', 'use_rdct', 'long_link_mode', 'enable_jump_url', 'jumpurl_tracking_privacy', 'enable_mailto_jump_url', 'showContentTitle', 'prependContentTitle'] as $checkboxName) {
-                    if (!isset($this->pageTS[$checkboxName])) {
-                        $this->pageTS[$checkboxName] = '0';
-                    }
+        if (($this->id && $this->access || $this->isAdmin() && !$this->id) && $this->getBackendUser()->doesUserHaveAccess(BackendUtility::getRecord('pages', $this->id), 2)) {
+            $this->languageService = $this->getLanguageService();
+            $this->pageTS = $request->getParsedBody()['pageTS'] ?? [];
+            foreach (['includeMedia', 'flowedFormat', 'use_rdct', 'long_link_mode', 'enable_jump_url', 'jumpurl_tracking_privacy', 'enable_mailto_jump_url', 'showContentTitle', 'prependContentTitle'] as $checkboxName) {
+                if (!isset($this->pageTS[$checkboxName])) {
+                    $this->pageTS[$checkboxName] = '0';
                 }
-
-                $done = false;
-                if (is_array($this->pageTS) && count($this->pageTS)) {
-                    $done = GeneralUtility::makeInstance(TsUtility::class)->updatePagesTSconfig($this->id, $this->pageTS, $this->TSconfPrefix);
-                }
-
-                if ($done) {
-                    $title = $this->languageService->sL($this->lllFile . ':mod.configuration.saved.title');
-                    $message = $this->languageService->sL($this->lllFile . ':mod.configuration.saved');
-                } else {
-                    $title = $this->languageService->sL($this->lllFile . ':mod.configuration.not_saved');
-                    $message = $this->languageService->sL($this->lllFile . ':mod.configuration.not_saved.title');
-                }
-
-                $responseFactory = $this->getResponseFactory();
-                $response = $responseFactory->createResponse()->withHeader('Content-Type', 'application/json; charset=utf-8');
-                $response->getBody()->write(json_encode(['result' => [
-                    'title' => $title,
-                    'message' => $message,
-                    'type' => $done,
-                ]], JSON_THROW_ON_ERROR));
-                return $response;
-
             }
+            $done = false;
+            if (is_array($this->pageTS) && count($this->pageTS)) {
+                $done = GeneralUtility::makeInstance(TsUtility::class)->updatePagesTSconfig($this->id, $this->pageTS, $this->TSconfPrefix);
+            }
+            if ($done) {
+                $title = $this->languageService->sL($this->lllFile . ':mod.configuration.saved.title');
+                $message = $this->languageService->sL($this->lllFile . ':mod.configuration.saved');
+            } else {
+                $title = $this->languageService->sL($this->lllFile . ':mod.configuration.not_saved');
+                $message = $this->languageService->sL($this->lllFile . ':mod.configuration.not_saved.title');
+            }
+            $responseFactory = $this->getResponseFactory();
+            $response = $responseFactory->createResponse()->withHeader('Content-Type', 'application/json; charset=utf-8');
+            $response->getBody()->write(json_encode(['result' => [
+                'title' => $title,
+                'message' => $message,
+                'type' => $done,
+            ]], JSON_THROW_ON_ERROR));
+            return $response;
         }
 
         return null;
@@ -197,30 +190,28 @@ final class ConfigurationController extends MainController
       */
     protected function updatePageTS(): void
     {
-        if ($this->getBackendUser()->doesUserHaveAccess(BackendUtility::getRecord('pages', $this->id), 2)) {
-            if (is_array($this->pageTS) && count($this->pageTS)) {
-                $notificationQueue = $this->getFlashMessageQueue(FlashMessageQueue::NOTIFICATION_QUEUE);
-                $done = false;
-                if ($this->submit) {
-                    $done = GeneralUtility::makeInstance(TsUtility::class)->updatePagesTSconfig($this->id, $this->pageTS, $this->TSconfPrefix);
-                }
-                if ($this->submit && $done) {
-                    $message = $this->createFlashMessage(
-                        $this->languageService->sL($this->lllFile . ':mod.configuration.saved'),
-                        $this->languageService->sL($this->lllFile . ':mod.configuration.saved.title'),
-                        ContextualFeedbackSeverity::OK,
-                        false
-                    );
-                    $notificationQueue->enqueue($message);
-                } elseif ($this->submit && !$done) {
-                    $message = $this->createFlashMessage(
-                        $this->languageService->sL($this->lllFile . ':mod.configuration.not_saved'),
-                        $this->languageService->sL($this->lllFile . ':mod.configuration.not_saved.title'),
-                        ContextualFeedbackSeverity::WARNING,
-                        false
-                    );
-                    $notificationQueue->enqueue($message);
-                }
+        if ($this->getBackendUser()->doesUserHaveAccess(BackendUtility::getRecord('pages', $this->id), 2) && (is_array($this->pageTS) && count($this->pageTS))) {
+            $notificationQueue = $this->getFlashMessageQueue(FlashMessageQueue::NOTIFICATION_QUEUE);
+            $done = false;
+            if ($this->submit) {
+                $done = GeneralUtility::makeInstance(TsUtility::class)->updatePagesTSconfig($this->id, $this->pageTS, $this->TSconfPrefix);
+            }
+            if ($this->submit && $done) {
+                $message = $this->createFlashMessage(
+                    $this->languageService->sL($this->lllFile . ':mod.configuration.saved'),
+                    $this->languageService->sL($this->lllFile . ':mod.configuration.saved.title'),
+                    ContextualFeedbackSeverity::OK,
+                    false
+                );
+                $notificationQueue->enqueue($message);
+            } elseif ($this->submit && !$done) {
+                $message = $this->createFlashMessage(
+                    $this->languageService->sL($this->lllFile . ':mod.configuration.not_saved'),
+                    $this->languageService->sL($this->lllFile . ':mod.configuration.not_saved.title'),
+                    ContextualFeedbackSeverity::WARNING,
+                    false
+                );
+                $notificationQueue->enqueue($message);
             }
         }
     }

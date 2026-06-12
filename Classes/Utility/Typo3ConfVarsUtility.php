@@ -34,7 +34,8 @@ class Typo3ConfVarsUtility
     public static function getDMConfigMergedFields(): array
     {
         $rowFieldsArray = GeneralUtility::trimExplode(',', self::getDMConfigDefaultRecipFields());
-        if ($dmConfigAddRecipFields = self::getDMConfigAddRecipFields()) {
+        $dmConfigAddRecipFields = self::getDMConfigAddRecipFields();
+        if ($dmConfigAddRecipFields !== '' && $dmConfigAddRecipFields !== '0') {
             $rowFieldsArray = array_merge($rowFieldsArray, GeneralUtility::trimExplode(',', $dmConfigAddRecipFields));
         }
         return $rowFieldsArray;
@@ -43,8 +44,8 @@ class Typo3ConfVarsUtility
     public static function getDMConfigSendPerCycle(): int
     {
         $dmConfig = self::getDMConfig();
-        if (trim($dmConfig['sendPerCycle'])) {
-            return (int)(trim($dmConfig['sendPerCycle']));
+        if (trim((string)$dmConfig['sendPerCycle']) !== '' && trim((string)$dmConfig['sendPerCycle']) !== '0') {
+            return (int)(trim((string)$dmConfig['sendPerCycle']));
         }
 
         return 50;

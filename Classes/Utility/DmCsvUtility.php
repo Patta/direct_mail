@@ -22,7 +22,7 @@ class DmCsvUtility
         fwrite($fh, trim($str));
         fseek($fh, 0);
         $lines = [];
-        if ($sep == 'tab') {
+        if ($sep === 'tab') {
             $sep = "\t";
         }
         while ($data = fgetcsv($fh, 1000, $sep)) {
@@ -55,26 +55,27 @@ class DmCsvUtility
             // adds that number to the field value (accummulation) and '=[value]'
             // overrides any existing value in the field
             $first = $lines[0];
-            if ($dmConfigAddRecipFields = Typo3ConfVarsUtility::getDMConfigAddRecipFields()) {
+            $dmConfigAddRecipFields = Typo3ConfVarsUtility::getDMConfigAddRecipFields();
+            if ($dmConfigAddRecipFields !== '' && $dmConfigAddRecipFields !== '0') {
                 $fieldListArr = array_merge($fieldListArr, explode(',', $dmConfigAddRecipFields));
             }
             $fieldName = 1;
             $fieldOrder = [];
 
             foreach ($first as $v) {
-                $parts = preg_split('|[\[\]]|', $v);
+                $parts = preg_split('|[\[\]]|', (string)$v);
                 $fName = $parts[0] ?? '';
                 $fConf = $parts[1] ?? '';
                 $fName = trim($fName);
                 $fConf = trim($fConf);
                 $fieldOrder[] = [$fName, $fConf];
-                if ($fName && substr($fName, 0, 5) != 'user_' && !in_array($fName, $fieldListArr)) {
+                if ($fName && !str_starts_with($fName, 'user_') && !in_array($fName, $fieldListArr)) {
                     $fieldName = 0;
                     break;
                 }
             }
             // If not field list, then:
-            if (!$fieldName) {
+            if ($fieldName === 0) {
                 $fieldOrder = [
                     ['name'],
                     ['email'],
@@ -82,7 +83,7 @@ class DmCsvUtility
             }
             // Re-map values
             reset($lines);
-            if ($fieldName) {
+            if ($fieldName !== 0) {
                 // Advance pointer if the first line was field names
                 next($lines);
             }
@@ -97,15 +98,15 @@ class DmCsvUtility
                         if (isset($fN[0])) {
                             if (isset($fN[1])) {
                                 // If is true
-                                if (trim($data[$kk])) {
-                                    if (substr($fN[1], 0, 1) == '=') {
+                                if (trim((string)$data[$kk]) !== '' && trim((string)$data[$kk]) !== '0') {
+                                    if (str_starts_with($fN[1], '=')) {
                                         $out[$c][$fN[0]] = trim(substr($fN[1], 1));
-                                    } elseif (substr($fN[1], 0, 1) == '+') {
+                                    } elseif (str_starts_with($fN[1], '+')) {
                                         $out[$c][$fN[0]] += substr($fN[1], 1);
                                     }
                                 }
                             } else {
-                                $out[$c][$fN[0]] = trim($data[$kk]);
+                                $out[$c][$fN[0]] = trim((string)$data[$kk]);
                             }
                         }
                     }

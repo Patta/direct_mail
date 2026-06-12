@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+use DirectMailTeam\DirectMail\Scheduler\MailFromDraft;
+use DirectMailTeam\DirectMail\Scheduler\MailFromDraftAdditionalFields;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 defined('TYPO3') || die();
 
 // https://docs.typo3.org/m/typo3/reference-coreapi/12.4/en-us/ExtensionArchitecture/BestPractises/ConfigurationFiles.html
@@ -10,17 +15,17 @@ defined('TYPO3') || die();
     $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_fe.php']['hook_checkEnableFields']['direct_mail'] = 'DirectMailTeam\\DirectMail\\Hooks\\TypoScriptFrontendController->simulateUsergroup';
 
     // Get extension configuration so we can use it here:
-    $extConf = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Configuration\ExtensionConfiguration::class)->get('direct_mail');
+    $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('direct_mail');
 
     /**
      * Language of the cron task:
      */
-    $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['direct_mail']['cronLanguage'] = $extConf['cronLanguage'] ? $extConf['cronLanguage'] : 'en';
+    $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['direct_mail']['cronLanguage'] = $extConf['cronLanguage'] ?: 'en';
 
     /**
      * Number of messages sent per cycle of the cron task:
      */
-    $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['direct_mail']['sendPerCycle'] = $extConf['sendPerCycle'] ? $extConf['sendPerCycle'] : 50;
+    $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['direct_mail']['sendPerCycle'] = $extConf['sendPerCycle'] ?: 50;
 
     /**
      * Default recipient field list:
@@ -61,11 +66,11 @@ defined('TYPO3') || die();
     /**
      * Registering class to scheduler
      */
-    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks']['DirectMailTeam\\DirectMail\\Scheduler\\MailFromDraft'] = [
+    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks'][MailFromDraft::class] = [
         'extension'            => 'direct_mail',
         'title'                => 'Direct Mail: Create Mail from Draft',
         'description'        => 'This task allows you to select a DirectMail draft that gets copied and then sent to the. This allows automatic (periodic) sending of the same TYPO3 page.',
-        'additionalFields'    => 'DirectMailTeam\\DirectMail\\Scheduler\\MailFromDraftAdditionalFields',
+        'additionalFields'    => MailFromDraftAdditionalFields::class,
     ];
 
     // https://docs.typo3.org/c/typo3/cms-core/main/en-us/Changelog/12.3/Feature-100232-LoadAdditionalStylesheetsInTYPO3Backend.html

@@ -75,7 +75,7 @@ class MailFromDraftAdditionalFields extends AbstractAdditionalFieldProvider
 
         if (count($drafts) === 0) {
             // TODO: localization
-            $fieldHtml .= '<option>' . 'No drafts found. Please add one first through the direct mail process' . '</option>';
+            $fieldHtml .= '<option>No drafts found. Please add one first through the direct mail process</option>';
         } else {
             foreach ($drafts as $draft) {
                 // see #44577

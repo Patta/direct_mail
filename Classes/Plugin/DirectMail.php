@@ -113,7 +113,7 @@ class DirectMail
         $this->templateService = GeneralUtility::makeInstance(MarkerBasedTemplateService::class);
         // Setting piVars:
         if ($this->prefixId) {
-            $this->piVars = self::getRequestPostOverGetParameterWithPrefix($this->prefixId);
+            $this->piVars = $this->getRequestPostOverGetParameterWithPrefix($this->prefixId);
         }
         $language = $this->request->getAttribute('language') ?? $this->request->getAttribute('site')->getDefaultLanguage();
         $this->LLkey = $language->getTypo3Language();
@@ -129,7 +129,7 @@ class DirectMail
     /**
      * Sets the content object render instance.
      *
-     * @param \TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer $contentObjectRenderer
+     * @param ContentObjectRenderer $contentObjectRenderer
      */
     public function setContentObjectRenderer(ContentObjectRenderer $contentObjectRenderer): void
     {
@@ -167,18 +167,14 @@ class DirectMail
             case 'header':
                 $lines[] = $this->getHeader();
                 if ($this->cObj->data['subheader']) {
-                    $lines[] = $this->breakContent(strip_tags($this->cObj->data['subheader']));
+                    $lines[] = $this->breakContent(strip_tags((string)$this->cObj->data['subheader']));
                 }
                 break;
             case 'text':
                 // same as textpic
             case 'textpic':
             case 'textmedia':
-                if ($cType === 'textmedia') {
-                    $field = 'assets';
-                } else {
-                    $field = 'image';
-                }
+                $field = $cType === 'textmedia' ? 'assets' : 'image';
                 $lines[] = $this->getHeader();
                 $list = 'textpic,textmedia';
 
@@ -226,9 +222,9 @@ class DirectMail
                         $lines = array_merge($lines, $procObj->renderPlainText($this, $content));
                     }
                 }
-                if (empty($lines)) {
+                if ($lines === []) {
                     $defaultOutput = $this->getString($this->conf['defaultOutput']);
-                    if ($defaultOutput) {
+                    if ($defaultOutput !== '' && $defaultOutput !== '0') {
                         $lines[] = str_replace('###CType###', $cType, $defaultOutput);
                     }
                 }
@@ -274,7 +270,7 @@ class DirectMail
                 $this->LOCAL_LANG_UNSET = [];
                 foreach ($this->conf['_LOCAL_LANG.'] as $languageKey => $languageArray) {
                     // Remove the dot after the language key
-                    $languageKey = substr($languageKey, 0, -1);
+                    $languageKey = substr((string)$languageKey, 0, -1);
                     // Don't process label if the language is not loaded
                     if (is_array($languageArray) && isset($this->LOCAL_LANG[$languageKey])) {
                         foreach ($languageArray as $labelKey => $labelValue) {
@@ -332,7 +328,7 @@ class DirectMail
     {
         return $this->breakContent(
             strip_tags(
-                preg_replace(
+                (string)preg_replace(
                     '/<br\s*\/?>/i',
                     LF,
                     $this->parseBody(is_string($str) ? $str : $this->cObj->data['bodytext'])
@@ -362,7 +358,7 @@ class DirectMail
     public function getImages(string $fieldname): string
     {
         $configuration = [
-            '10' => 'TYPO3\CMS\Frontend\DataProcessing\FilesProcessor',
+            '10' => FilesProcessor::class,
             '10.' => [
                 'references.' => [
                     'fieldName' => $fieldname,
@@ -415,7 +411,7 @@ class DirectMail
             $str = preg_replace("/\n/", "\n\n", $str);
         }
         // Regular parsing:
-        $str = preg_replace('/<br\s*\/?>/i', LF, $str);
+        $str = preg_replace('/<br\s*\/?>/i', LF, (string)$str);
         $str = $this->cObj->stdWrap($str, $this->conf[$altConf . '.']['stdWrap.']);
 
         // Then all a-tags:
@@ -424,7 +420,7 @@ class DirectMail
         $aConf['parseFunc.']['tags.']['a.']['userFunc'] = 'DirectMailTeam\DirectMail\Plugin\DirectMail->atagToHttp';
         $aConf['parseFunc.']['tags.']['a.']['siteUrl'] = $this->siteUrl;
         $str = $this->cObj->stdWrap($str, $aConf);
-        $str = str_replace('&nbsp;', ' ', htmlspecialchars_decode($str));
+        $str = str_replace('&nbsp;', ' ', htmlspecialchars_decode((string)$str));
 
         if ($this->conf[$altConf . '.']['header']) {
             $str = $this->getString($this->conf[$altConf . '.']['header']) . LF . $str;
@@ -467,37 +463,37 @@ class DirectMail
      */
     public function renderHeader(string $str, int $type = 0): string
     {
-        if ($str) {
+        if ($str !== '' && $str !== '0') {
             $hConf = $this->conf['header.'];
             $defaultType = DirectMailUtility::intInRangeWrapper((int)$hConf['defaultType'], 1, 5);
             $type = DirectMailUtility::intInRangeWrapper((int)$type, 0, 6);
-            if (!$type) {
+            if ($type === 0) {
                 $type = $defaultType;
             }
-            if ($type != 6) {
+            if ($type !== 6) {
                 // not hidden
                 $tConf = $hConf[$type . '.'];
 
                 if ($tConf['removeSplitChar']) {
-                    $str = preg_replace('/' . preg_quote($tConf['removeSplitChar'], '/') . '/', '', $str);
+                    $str = preg_replace('/' . preg_quote((string)$tConf['removeSplitChar'], '/') . '/', '', $str);
                 }
 
                 $lines = [];
 
                 $blanks = DirectMailUtility::intInRangeWrapper((int)$tConf['preBlanks'], 0, 1000);
-                if ($blanks) {
+                if ($blanks !== 0) {
                     $lines[] = str_pad('', $blanks - 1, LF);
                 }
 
                 $lines = $this->pad($lines, $tConf['preLineChar'], (int)$tConf['preLineLen']);
 
                 $blanks = DirectMailUtility::intInRangeWrapper((int)$tConf['preLineBlanks'], 0, 1000);
-                if ($blanks) {
+                if ($blanks !== 0) {
                     $lines[] = str_pad('', $blanks - 1, LF);
                 }
 
                 if ($this->cObj->data['date']) {
-                    $lines[] = $this->getString($hConf['datePrefix']) . date($hConf['date'] ? $hConf['date'] : 'd-m-Y', $this->cObj->data['date']);
+                    $lines[] = $this->getString($hConf['datePrefix']) . date($hConf['date'] ?: 'd-m-Y', $this->cObj->data['date']);
                 }
 
                 $prefix = '';
@@ -518,14 +514,14 @@ class DirectMail
                 }
 
                 $blanks = DirectMailUtility::intInRangeWrapper((int)$tConf['postLineBlanks'], 0, 1000);
-                if ($blanks) {
+                if ($blanks !== 0) {
                     $lines[] = str_pad('', $blanks - 1, LF);
                 }
 
                 $lines = $this->pad($lines, $tConf['postLineChar'], (int)$tConf['postLineLen']);
 
                 $blanks = DirectMailUtility::intInRangeWrapper((int)$tConf['postBlanks'], 0, 1000);
-                if ($blanks) {
+                if ($blanks !== 0) {
                     $lines[] = str_pad('', $blanks - 1, LF);
                 }
                 return implode(LF, $lines);
@@ -549,7 +545,7 @@ class DirectMail
     {
         $strPad = DirectMailUtility::intInRangeWrapper((int)$len, 0, 1000);
         $strPadChar = $preLineChar ?: '-';
-        if ($strPad) {
+        if ($strPad !== 0) {
             $lines[] = str_pad('', $strPad, $strPadChar);
         }
         return $lines;
@@ -604,7 +600,7 @@ class DirectMail
             $lines[] = $bullet . $this->breakLines($substrs, LF . $secondRow, $this->charWidth - $bLen);
 
             $blanks = DirectMailUtility::intInRangeWrapper((int)$tConf['blanks'], 0, 1000);
-            if ($blanks) {
+            if ($blanks !== 0) {
                 $lines[] = str_pad('', $blanks - 1, LF);
             }
         }
@@ -627,9 +623,9 @@ class DirectMail
         $c = 0;
         foreach ($cParts as $substrs) {
             $c++;
-            if (trim($substrs)) {
+            if (trim($substrs) !== '' && trim($substrs) !== '0') {
                 $lineParts = explode('|', $substrs);
-                if (!$cols) {
+                if ($cols === 0) {
                     $cols = count($lineParts);
                 }
 
@@ -705,8 +701,8 @@ class DirectMail
         foreach ($tableLines as $k => $v) {
             foreach ($v as $kk => $vv) {
                 foreach ($vv as $lv) {
-                    if (strlen($lv) > (int)$maxLen[$kk]) {
-                        $maxLen[$kk] = strlen($lv);
+                    if (strlen((string)$lv) > (int)$maxLen[$kk]) {
+                        $maxLen[$kk] = strlen((string)$lv);
                     }
                 }
                 if (count($vv) > (int)$maxLines[$k]) {
@@ -735,11 +731,11 @@ class DirectMail
 
         // create the image, imagelink and image caption block
         foreach ($imagesArray as $k => $image) {
-            if (strlen(trim($image['image'])) > 0) {
+            if (trim((string)$image['image']) !== '') {
                 $lines[] = $image['image'];
                 if ($image['link']) {
                     $theLink = $this->getLink($image['link']);
-                    if ($theLink) {
+                    if ($theLink !== '' && $theLink !== '0') {
                         $lines[] = $this->getString($this->conf[$fieldname . '.']['linkPrefix']) . $theLink;
                     }
                 }
@@ -806,7 +802,7 @@ class DirectMail
     public function getString(string $str): string
     {
         $parts = explode('|', $str);
-        return strcmp($parts[1], '') ? $parts[1] : $parts[0];
+        return strcmp($parts[1], '') !== 0 ? $parts[1] : $parts[0];
     }
 
     /**
@@ -845,7 +841,7 @@ class DirectMail
     {
         $this->conf = $conf;
         $this->siteUrl = $conf['siteUrl'];
-        $theLink = trim($this->cObj->parameters['href']);
+        $theLink = trim((string)$this->cObj->parameters['href']);
 
         $theLink = $this->getLink($theLink);
 
@@ -869,7 +865,7 @@ class DirectMail
     {
         $this->conf = $this->cObj->mergeTSRef($conf, 'bulletlist');
         $this->siteUrl = $conf['siteUrl'];
-        $str = trim($this->cObj->getCurrentVal());
+        $str = trim((string)$this->cObj->getCurrentVal());
         $this->cObj->data['layout'] = $this->cObj->parameters['type'];
         return $this->breakBulletlist($str);
     }
@@ -887,7 +883,7 @@ class DirectMail
         $this->conf = $this->cObj->mergeTSRef($conf, 'header');
 
         $this->siteUrl = $conf['siteUrl'];
-        $str = trim($this->cObj->getCurrentVal());
+        $str = trim((string)$this->cObj->getCurrentVal());
         $this->cObj->data['header_layout'] = $this->cObj->parameters['type'];
         $this->cObj->data['header_position'] = $this->cObj->parameters['align'];
         $this->cObj->data['header'] = $str;
@@ -927,7 +923,7 @@ class DirectMail
         return $markerArray;
     }
 
-    private static function getRequestPostOverGetParameterWithPrefix($parameter)
+    private function getRequestPostOverGetParameterWithPrefix($parameter)
     {
         $postParameter = isset($_POST[$parameter]) && is_array($_POST[$parameter]) ? $_POST[$parameter] : [];
         $getParameter = isset($_GET[$parameter]) && is_array($_GET[$parameter]) ? $_GET[$parameter] : [];

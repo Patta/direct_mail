@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DirectMailTeam\DirectMail\Repository;
 
+use Doctrine\DBAL\ArrayParameterType;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -107,7 +108,7 @@ class SysDmailRepository extends MainRepository
         ->where(
             $queryBuilder->expr()->in(
                 'pid',
-                $queryBuilder->createNamedParameter($pids, Connection::PARAM_INT_ARRAY)
+                $queryBuilder->createNamedParameter($pids, ArrayParameterType::INTEGER)
             ),
             $queryBuilder->expr()->gt(
                 'scheduled',
@@ -186,7 +187,7 @@ class SysDmailRepository extends MainRepository
             ),
             $queryBuilder->expr()->in(
                 $this->table . '.type',
-                $queryBuilder->createNamedParameter([0, 1], Connection::PARAM_INT_ARRAY)
+                $queryBuilder->createNamedParameter([0, 1], ArrayParameterType::INTEGER)
             ),
             $queryBuilder->expr()->eq(
                 $this->table . '.issent',
@@ -346,7 +347,7 @@ class SysDmailRepository extends MainRepository
             ->andWhere(
                 $queryBuilder->expr()->notIn(
                     'type',
-                    $queryBuilder->createNamedParameter([2, 3], Connection::PARAM_INT_ARRAY)
+                    $queryBuilder->createNamedParameter([2, 3], ArrayParameterType::INTEGER)
                 )
             )
             ->orderBy('scheduled')

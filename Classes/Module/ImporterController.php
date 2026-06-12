@@ -16,7 +16,6 @@ namespace DirectMailTeam\DirectMail\Module;
  *
  * The TYPO3 project - inspiring people to share!
  */
-
 use DirectMailTeam\DirectMail\Event\ImporterOutputEvent;
 use DirectMailTeam\DirectMail\Repository\PagesRepository;
 use DirectMailTeam\DirectMail\Repository\SysDmailCategoryRepository;
@@ -37,7 +36,9 @@ use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Messaging\FlashMessageQueue;
 use TYPO3\CMS\Core\Resource\DefaultUploadFolderResolver;
 use TYPO3\CMS\Core\Resource\Enum\DuplicationBehavior;
+use TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException;
 use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\Folder;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\SysLog\Type as SystemLogType;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
@@ -85,7 +86,7 @@ final class ImporterController extends MainController
         $permsClause = $this->getBackendUser()->getPagePermsClause(Permission::PAGE_SHOW);
         $pageAccess = BackendUtility::readPageAccess($this->id, $permsClause);
         $this->pageinfo = is_array($pageAccess) ? $pageAccess : [];
-        $this->access = is_array($this->pageinfo) ? true : false;
+        $this->access = is_array($this->pageinfo);
 
         $this->beUser = $this->getBackendUser();
 
@@ -120,7 +121,7 @@ final class ImporterController extends MainController
                             'show' => true,
                         ]
                     );
-                } elseif ($this->id != 0) {
+                } elseif ($this->id !== 0) {
                     $message = $this->createFlashMessage(
                         $this->languageService->sL($this->lllFile . ':dmail_noRegular'),
                         $this->languageService->sL($this->lllFile . ':dmail_newsletters'),
@@ -246,11 +247,11 @@ final class ImporterController extends MainController
             'update_unique' => 0,
         ];
 
-        if (!empty($this->csvImport)) {
+        if ($this->csvImport !== []) {
             $this->indata = ($step['next'] === 'mapping') ? ($this->csvImport + $defaultConf) : $this->csvImport;
         }
 
-        if (empty($this->indata)) {
+        if ($this->indata === []) {
             $this->indata = [];
         }
 
@@ -277,7 +278,7 @@ final class ImporterController extends MainController
             $stepCurrent = 'mapping';
         }
 
-        if (strlen($this->indata['csv'] ?? '') > 0) {
+        if ((string)($this->indata['csv'] ?? '') !== '') {
             $this->indata['mode'] = 'csv';
             $tempFile = $this->writeTempFile(
                 $this->indata['csv'] ?? '',
@@ -298,7 +299,7 @@ final class ImporterController extends MainController
             $map = $this->indata['map'];
             // check noMap
             $newMap = ArrayUtility::removeArrayEntryByValue(array_unique($map), 'noMap');
-            if (empty($newMap)) {
+            if ($newMap === []) {
                 $error[] = 'noMap';
             } elseif (!in_array('email', $map)) {
                 $error[] = 'email';
@@ -350,7 +351,7 @@ final class ImporterController extends MainController
                     ['val' => 'name', 'text' => 'name'],
                 ];
 
-                $output['conf']['disableInput'] = ($this->params['inputDisable'] ?? 0) == 1 ? true : false;
+                $output['conf']['disableInput'] = ($this->params['inputDisable'] ?? 0) == 1;
 
                 // show configuration
                 $output['subtitle'] = $this->languageService->sL($this->lllFile . ':mailgroup_import_header_conf');
@@ -360,10 +361,10 @@ final class ImporterController extends MainController
                 $output['conf']['storageSelected'] = $this->indata['storage'] ?? '';
 
                 // remove existing option
-                $output['conf']['remove_existing'] = !($this->indata['remove_existing'] ?? false) ? false : true;
+                $output['conf']['remove_existing'] = (bool)($this->indata['remove_existing'] ?? false);
 
                 // first line in csv is to be ignored
-                $output['conf']['first_fieldname'] = !($this->indata['first_fieldname'] ?? false) ? false : true;
+                $output['conf']['first_fieldname'] = (bool)($this->indata['first_fieldname'] ?? false);
 
                 // csv separator
                 $output['conf']['delimiter'] = $optDelimiter;
@@ -374,13 +375,13 @@ final class ImporterController extends MainController
                 $output['conf']['encapsulationSelected'] = $this->indata['encapsulation'] ?? '';
 
                 // import only valid email
-                $output['conf']['valid_email'] = !($this->indata['valid_email'] ?? false) ? false : true;
+                $output['conf']['valid_email'] = (bool)($this->indata['valid_email'] ?? false);
 
                 // only import distinct records
-                $output['conf']['remove_dublette'] = !($this->indata['remove_dublette'] ?? false) ? false : true;
+                $output['conf']['remove_dublette'] = (bool)($this->indata['remove_dublette'] ?? false);
 
                 // update the record instead renaming the new one
-                $output['conf']['update_unique'] = !($this->indata['update_unique'] ?? false) ? false : true;
+                $output['conf']['update_unique'] = (bool)($this->indata['update_unique'] ?? false);
 
                 // which field should be use to show uniqueness of the records
                 $output['conf']['record_unique'] = $optUnique;
@@ -401,7 +402,7 @@ final class ImporterController extends MainController
                 $output['mapping']['remove_dublette'] = $this->indata['remove_dublette'];
                 $output['mapping']['update_unique'] = $this->indata['update_unique'];
                 $output['mapping']['record_unique'] = $this->indata['record_unique'];
-                $output['mapping']['all_html'] = !($this->indata['all_html'] ?? false) ? false : true;
+                $output['mapping']['all_html'] = (bool)($this->indata['all_html'] ?? false);
                 $output['mapping']['error'] = $error;
 
                 // show charset selector
@@ -458,7 +459,8 @@ final class ImporterController extends MainController
                 reset($csvData);
 
                 $output['mapping']['fields'] = $mapFields;
-                for ($i = 0; $i < (count($csv_firstRow)); $i++) {
+                $counter = count($csv_firstRow);
+                for ($i = 0; $i < ($counter); $i++) {
                     // example CSV
                     $exampleLines = [];
                     for ($j = 0; $j < (count($csvData)); $j++) {
@@ -480,14 +482,14 @@ final class ImporterController extends MainController
                         // additional options
                         if ($output['mapping']['update_unique']) {
                             $output['mapping']['show_add_cat'] = true;
-                            $output['mapping']['add_cat'] = $this->indata['add_cat'] ? true : false;
+                            $output['mapping']['add_cat'] = (bool)$this->indata['add_cat'];
                         }
                         foreach ($rowCat as $k => $v) {
                             $output['mapping']['mapping_cats'][] = [
-                                'cat' => htmlspecialchars($v['category']),
+                                'cat' => htmlspecialchars((string)$v['category']),
                                 'k' => $k,
                                 'vUid' => $v['uid'],
-                                'checked' => $this->indata['cat'][$k] != $v['uid'] ? false : true,
+                                'checked' => $this->indata['cat'][$k] == $v['uid'],
                             ];
                         }
                     }
@@ -508,8 +510,8 @@ final class ImporterController extends MainController
                 $output['startImport']['remove_dublette'] = $this->indata['remove_dublette'];
                 $output['startImport']['update_unique'] = $this->indata['update_unique'];
                 $output['startImport']['record_unique'] = $this->indata['record_unique'];
-                $output['startImport']['all_html'] = !($this->indata['all_html'] ?? false) ? false : true;
-                $output['startImport']['add_cat'] = ($this->indata['add_cat'] ?? false) ? true : false;
+                $output['startImport']['all_html'] = (bool)($this->indata['all_html'] ?? false);
+                $output['startImport']['add_cat'] = $this->indata['add_cat'] ?? false;
 
                 $output['startImport']['error'] = $error;
 
@@ -556,7 +558,7 @@ final class ImporterController extends MainController
                     foreach ($this->indata['map'] as $fieldNr => $fieldMapped) {
                         $output['startImport']['hiddenMap'][] = [
                             'name' => htmlspecialchars('CSV_IMPORT[map][' . $fieldNr . ']'),
-                            'value' => htmlspecialchars($fieldMapped),
+                            'value' => htmlspecialchars((string)$fieldMapped),
                         ];
                     }
                 }
@@ -564,7 +566,7 @@ final class ImporterController extends MainController
                     foreach ($this->indata['cat'] as $k => $catUid) {
                         $output['startImport']['hiddenCat'][] = [
                             'name' => htmlspecialchars('CSV_IMPORT[cat][' . $k . ']'),
-                            'value' => htmlspecialchars($catUid),
+                            'value' => htmlspecialchars((string)$catUid),
                         ];
                     }
                 }
@@ -627,18 +629,16 @@ final class ImporterController extends MainController
             if (!in_array($k, $remove)) {
                 $found = 0;
                 foreach ($cmpCsv as $kk => $cmpData) {
-                    if ($k != $kk) {
-                        if ($csvData[$this->indata['record_unique']] == $cmpData[$this->indata['record_unique']]) {
-                            $double[] = $mappedCsv[$kk];
-                            if (!$found) {
-                                $filtered[] = $csvData;
-                            }
-                            $remove[] = $kk;
-                            $found = 1;
+                    if ($k != $kk && $csvData[$this->indata['record_unique']] == $cmpData[$this->indata['record_unique']]) {
+                        $double[] = $mappedCsv[$kk];
+                        if ($found === 0) {
+                            $filtered[] = $csvData;
                         }
+                        $remove[] = $kk;
+                        $found = 1;
                     }
                 }
-                if (!$found) {
+                if ($found === 0) {
                     $filtered[] = $csvData;
                 }
             }
@@ -674,21 +674,19 @@ final class ImporterController extends MainController
             foreach ($dataArray as $kk => $fieldData) {
                 if ($this->indata['map'][$kk] !== 'noMap') {
                     if (($this->indata['valid_email']) && ($this->indata['map'][$kk] === 'email')) {
-                        $invalidEmail = GeneralUtility::validEmail(trim($fieldData)) ? 0 : 1;
-                        $tempData[$this->indata['map'][$kk]] = trim($fieldData);
+                        $invalidEmail = GeneralUtility::validEmail(trim((string)$fieldData)) ? 0 : 1;
+                        $tempData[$this->indata['map'][$kk]] = trim((string)$fieldData);
+                    } elseif ($this->indata['map'][$kk] !== 'cats') {
+                        $tempData[$this->indata['map'][$kk]] = $fieldData;
                     } else {
-                        if ($this->indata['map'][$kk] !== 'cats') {
-                            $tempData[$this->indata['map'][$kk]] = $fieldData;
-                        } else {
-                            $tempCats = explode(',', $fieldData);
-                            foreach ($tempCats as $catC => $tempCat) {
-                                $tempData['module_sys_dmail_category'][$catC] = $tempCat;
-                            }
+                        $tempCats = explode(',', (string)$fieldData);
+                        foreach ($tempCats as $catC => $tempCat) {
+                            $tempData['module_sys_dmail_category'][$catC] = $tempCat;
                         }
                     }
                 }
             }
-            if ($invalidEmail) {
+            if ($invalidEmail !== 0) {
                 $invalidEmailCSV[] = $tempData;
             } else {
                 $mappedCSV[] = $tempData;
@@ -724,8 +722,8 @@ final class ImporterController extends MainController
             $c = 1;
             foreach ($mappedCSV as $dataArray) {
                 $foundUser = array_keys($user, $dataArray[$this->indata['record_unique']]);
-                if (is_array($foundUser) && !empty($foundUser)) {
-                    if (count($foundUser) == 1) {
+                if (is_array($foundUser) && $foundUser !== []) {
+                    if (count($foundUser) === 1) {
                         $data['tt_address'][$userID[$foundUser[0]]] =  $dataArray;
                         $data['tt_address'][$userID[$foundUser[0]]]['pid'] = $this->indata['storage'];
                         if ($this->indata['all_html']) {
@@ -748,7 +746,7 @@ final class ImporterController extends MainController
                         $resultImport['update'][] = $dataArray;
                     } else {
                         // which one to update? all?
-                        foreach ($foundUser as $kk => $_) {
+                        foreach (array_keys($foundUser) as $kk) {
                             $data['tt_address'][$userID[$foundUser[$kk]]] = $dataArray;
                             $data['tt_address'][$userID[$foundUser[$kk]]]['pid'] = $this->indata['storage'];
                         }
@@ -938,10 +936,10 @@ final class ImporterController extends MainController
             foreach ($data as $k => $v) {
                 if (is_array($v)) {
                     foreach ($v as $k2 => $val) {
-                        $data[$k][$k2] = $converter->conv($val, strtolower($this->indata['charset']), $dbCharset);
+                        $data[$k][$k2] = $converter->conv($val, strtolower((string)$this->indata['charset']), $dbCharset);
                     }
                 } else {
-                    $data[$k] = $converter->conv($v, strtolower($this->indata['charset']), $dbCharset);
+                    $data[$k] = $converter->conv($v, strtolower((string)$this->indata['charset']), $dbCharset);
                 }
             }
         }
@@ -987,7 +985,7 @@ final class ImporterController extends MainController
             $newfile = ['newFile' => $newFile, 'newFileUid' => $newFileUid];
         }
 
-        if ($newfile['newFile']) {
+        if ($newfile['newFile'] !== '' && $newfile['newFile'] !== '0') {
             $csvFile = [
                 'data' => $csv,
                 'target' => $newfile['newFile'],
@@ -1027,7 +1025,7 @@ final class ImporterController extends MainController
             if (is_object($tempFile[0])) {
                 $storageConfig = $tempFile[0]->getStorage()->getConfiguration();
                 $newfile = [
-                    'newFile' => rtrim($storageConfig['basePath'], '/') . '/' . ltrim($tempFile[0]->getIdentifier(), '/'),
+                    'newFile' => rtrim((string)$storageConfig['basePath'], '/') . '/' . ltrim($tempFile[0]->getIdentifier(), '/'),
                     'newFileUid' => $tempFile[0]->getUid(),
                 ];
             }
@@ -1038,14 +1036,14 @@ final class ImporterController extends MainController
 
     /**
      * @param int $fileUid
-     * @return \TYPO3\CMS\Core\Resource\File|bool
+     * @return File|bool
      */
     private function getFileById(int $fileUid): File|bool
     {
         $resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
         try {
             return $resourceFactory->getFileObject($fileUid);
-        } catch (\TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException $e) {
+        } catch (FileDoesNotExistException) {
         }
         return false;
     }
@@ -1071,7 +1069,7 @@ final class ImporterController extends MainController
     public function userTempFolder(): string
     {
         $defaultUploadFolderResolver = GeneralUtility::makeInstance(DefaultUploadFolderResolver::class);
-        /** @var \TYPO3\CMS\Core\Resource\Folder $folder */
+        /** @var Folder $folder */
         $folder = $defaultUploadFolderResolver->resolve($this->beUser);
         return $folder->getPublicUrl();
     }

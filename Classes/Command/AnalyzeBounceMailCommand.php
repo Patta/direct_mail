@@ -4,6 +4,7 @@ namespace DirectMailTeam\DirectMail\Command;
 
 use DirectMailTeam\DirectMail\Repository\SysDmailMaillogRepository;
 use DirectMailTeam\DirectMail\Utility\ReadmailUtility;
+use Doctrine\DBAL\DBALException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -19,15 +20,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class ImapMessage
 {
-    private $stream;
-    private int $msgNo;
     private bool $deleted = false;
 
-    public function __construct($stream, int $msgNo)
-    {
-        $this->stream = $stream;
-        $this->msgNo  = $msgNo;
-    }
+    public function __construct(private $stream, private readonly int $msgNo) {}
 
     public function getSubject(): string
     {
@@ -50,7 +45,7 @@ class ImapMessage
         }
 
         foreach ($structure->parts as $partNo => $part) {
-            if ($part->ifdisposition && strtolower($part->disposition) === 'attachment') {
+            if ($part->ifdisposition && strtolower((string)$part->disposition) === 'attachment') {
                 $data = imap_fetchbody($this->stream, $this->msgNo, (string)($partNo + 1));
                 if ($data === false) {
                     continue;
@@ -60,7 +55,7 @@ class ImapMessage
             }
         }
 
-        return empty($attachments) ? null : $attachments;
+        return $attachments === [] ? null : $attachments;
     }
 
     public function delete(): void
@@ -110,8 +105,8 @@ class ImapMessage
     private function decodeData($data, int $encoding): string
     {
         return match ($encoding) {
-            3 => base64_decode($data),
-            4 => quoted_printable_decode($data),
+            3 => base64_decode((string)$data),
+            4 => quoted_printable_decode((string)$data),
             default => $data,
         };
     }
@@ -122,12 +117,7 @@ class ImapMessage
  */
 class ImapAttachment
 {
-    private string $data;
-
-    public function __construct(string $data)
-    {
-        $this->data = $data;
-    }
+    public function __construct(private readonly string $data) {}
 
     public function getData(): string
     {
@@ -261,7 +251,7 @@ class AnalyzeBounceMailCommand extends Command
                     (int)$cp['reason'],
                     serialize($cp)
                 );
-            } catch (\Doctrine\DBAL\DBALException $e) {
+            } catch (DBALException) {
                 return false;
             }
         }

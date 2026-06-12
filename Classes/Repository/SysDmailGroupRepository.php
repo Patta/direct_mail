@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DirectMailTeam\DirectMail\Repository;
 
+use Doctrine\DBAL\ArrayParameterType;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -101,7 +102,7 @@ class SysDmailGroupRepository extends MainRepository
         ->where(
             $queryBuilder->expr()->in(
                 $this->table . '.uid',
-                $queryBuilder->createNamedParameter($intList, Connection::PARAM_INT_ARRAY)
+                $queryBuilder->createNamedParameter($intList, ArrayParameterType::INTEGER)
             )
         )
         ->andWhere(
@@ -144,7 +145,7 @@ class SysDmailGroupRepository extends MainRepository
             ->where(
                 $queryBuilder->expr()->in(
                     $this->table . '.uid',
-                    $queryBuilder->createNamedParameter($groupIdList, Connection::PARAM_INT_ARRAY)
+                    $queryBuilder->createNamedParameter($groupIdList, ArrayParameterType::INTEGER)
                 )
             )
             ->andWhere(

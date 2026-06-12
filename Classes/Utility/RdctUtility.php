@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DirectMailTeam\DirectMail\Utility;
 
+use FoT3\Rdct\Redirects;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class RdctUtility
@@ -13,8 +14,8 @@ class RdctUtility
         return class_exists('\FoT3\Rdct\Redirects');
     }
 
-    public function getRedirects(): \FoT3\Rdct\Redirects
+    public function getRedirects(): Redirects
     {
-        return GeneralUtility::makeInstance(\FoT3\Rdct\Redirects::class);
+        return GeneralUtility::makeInstance(Redirects::class);
     }
 }

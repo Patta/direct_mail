@@ -1,47 +1,77 @@
 {
-  "name": "directmailteam/direct-mail",
-  "type": "typo3-cms-extension",
-  "description": "Advanced Direct Mail/Newsletter mailer system with sophisticated options for personalization of emails including response statistics.",
-  "keywords": [
-    "TYPO3",
-    "extension",
-    "directmail",
-    "newsletter"
-  ],
-  "homepage": "https://github.com/kartolo/direct_mail",
-  "authors": [
-    {
-      "name": "Ivan Kartolo",
-      "role": "Developer"
-    }
-  ],
-  "license": [
-    "GPL-2.0-or-later"
-  ],
-  "support": {
-    "issues": "https://github.com/kartolo/direct_mail/issues"
-  },
-  "require": {
-    "typo3/cms-core": "^13.4",
-    "typo3/cms-dashboard": "^13.4",
-    "php": "^8.2 || ^8.3 || ^8.4",
-    "friendsoftypo3/tt-address": "^9.0 || ^10.0"
-  },
-  "require-dev": {
-    "roave/security-advisories": "dev-master"
-  },
-  "minimum-stability": "dev",
-  "autoload": {
-    "psr-4": {
-      "DirectMailTeam\\DirectMail\\": "Classes"
-    }
-  },
-  "replace": {
-    "typo3-ter/direct-mail": "self.version"
-  },
-  "extra": {
-    "typo3/cms": {
-      "extension-key": "direct_mail"
-    }
-  }
+	"name": "directmailteam/direct-mail",
+	"type": "typo3-cms-extension",
+	"description": "Advanced Direct Mail/Newsletter mailer system with sophisticated options for personalization of emails including response statistics.",
+	"keywords": [
+		"TYPO3",
+		"extension",
+		"directmail",
+		"newsletter"
+	],
+	"homepage": "https://github.com/kartolo/direct_mail",
+	"authors": [
+		{
+			"name": "Ivan Kartolo",
+			"role": "Developer"
+		}
+	],
+	"license": [
+		"GPL-2.0-or-later"
+	],
+	"support": {
+		"issues": "https://github.com/kartolo/direct_mail/issues"
+	},
+	"require": {
+		"php": "^8.3 || ^8.4",
+		"typo3/cms-core": "^13.4",
+		"typo3/cms-dashboard": "^13.4",
+		"typo3/cms-scheduler": "^13.4",
+		"typo3/cms-lowlevel": "^13.4",
+		"friendsoftypo3/tt-address": "^9.0 || ^10.0"
+	},
+	"require-dev": {
+		"helhum/typo3-console": "^8.2",
+		"typo3/coding-standards": "^0.8",
+		"ssch/typo3-rector": "^3.14",
+		"typo3/cms-core": "13.4.x-dev",
+		"typo3/cms-dashboard": "13.4.x-dev",
+		"typo3/cms-scheduler": "13.4.x-dev",
+		"typo3/cms-lowlevel": "13.4.x-dev"
+	},
+	"autoload": {
+		"psr-4": {
+			"DirectMailTeam\\DirectMail\\": "Classes"
+		}
+	},
+	"replace": {
+		"typo3-ter/direct-mail": "self.version"
+	},
+	"extra": {
+		"typo3/cms": {
+			"extension-key": "direct_mail",
+			"web-dir": ".Build/public"
+		}
+	},
+	"config": {
+		"vendor-dir": ".Build/vendor",
+		"bin-dir": ".Build/bin",
+		"allow-plugins": {
+			"typo3/cms-composer-installers": true,
+			"typo3/class-alias-loader": true
+		},
+		"scripts": {
+			"post-update-cmd": [
+				"typo3 database:updateschema",
+				"typo3 extension:setup",
+				"typo3 cache:flush"
+			],
+			"phpcsfixer": ".Build/bin/php-cs-fixer fix --config=Build/php-cs-fixer.php",
+			"rector": [
+				".Build/bin/rector process --config Build/rector.php",
+				"@phpcsfixer"
+			]
+		}
+	},
+	"minimum-stability": "dev",
+	"prefer-stable": true
 }

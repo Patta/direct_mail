@@ -1502,8 +1502,8 @@ final class DmailController extends MainController
         $idLists = [];
         foreach ($groups as $group) {
             // Testing to see if group ID is a valid integer, if not - skip to next group ID
-            $group = max(0, $group);
-            if ($group === 0) {
+            $group = (int)$group;
+            if ($group <= 0) {
                 continue;
             }
 

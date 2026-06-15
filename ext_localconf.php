@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
+use DirectMailTeam\DirectMail\Scheduler\AnalyzeBounceMail;
+use DirectMailTeam\DirectMail\Scheduler\DirectMailExecuteSchedulableCommandAdditionalFieldProvider;
 use DirectMailTeam\DirectMail\Scheduler\MailFromDraft;
 use DirectMailTeam\DirectMail\Scheduler\MailFromDraftAdditionalFields;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Scheduler\Task\ExecuteSchedulableCommandTask;
 
 defined('TYPO3') || die();
 
@@ -64,14 +67,26 @@ defined('TYPO3') || die();
     $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['direct_mail']['SSLVerifyPeerName'] = $extConf['SSLVerifyPeerName'] ?? 1;
 
     /**
-     * Registering class to scheduler
+     * Registering scheduler tasks
      */
     $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks'][MailFromDraft::class] = [
-        'extension'            => 'direct_mail',
-        'title'                => 'Direct Mail: Create Mail from Draft',
-        'description'        => 'This task allows you to select a DirectMail draft that gets copied and then sent to the. This allows automatic (periodic) sending of the same TYPO3 page.',
-        'additionalFields'    => MailFromDraftAdditionalFields::class,
+        'extension' => 'direct_mail',
+        'title' => 'Direct Mail: Create Mail from Draft',
+        'description' => 'This task allows you to select a DirectMail draft that gets copied and then sent to the. This allows automatic (periodic) sending of the same TYPO3 page.',
+        'additionalFields' => MailFromDraftAdditionalFields::class,
     ];
+
+    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks'][AnalyzeBounceMail::class] = [
+        'extension' => 'direct_mail',
+        'title' => 'Direct Mail: Wrapper for "directmail:analyzebouncemail" Command',
+        'description' => 'This is a wrapper task for the `directmail:analyzebouncemail` command, to mask the password argument in the task overview list. When creating this task, ensure that the `directmail:analyzebouncemail` command is selected from the dropdown list.',
+        'additionalFields' => DirectMailExecuteSchedulableCommandAdditionalFieldProvider::class,
+    ];
+
+    /**
+     * Extend scheduler command task's additional field provider
+     */
+    $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks'][ExecuteSchedulableCommandTask::class]['additionalFields'] = DirectMailExecuteSchedulableCommandAdditionalFieldProvider::class;
 
     // https://docs.typo3.org/c/typo3/cms-core/main/en-us/Changelog/12.3/Feature-100232-LoadAdditionalStylesheetsInTYPO3Backend.html
     $GLOBALS['TYPO3_CONF_VARS']['BE']['stylesheets']['direct_mail'] = 'EXT:direct_mail/Resources/Public/StyleSheets/';

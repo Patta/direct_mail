@@ -1,13 +1,14 @@
 {
 	"name": "directmailteam/direct-mail",
 	"type": "typo3-cms-extension",
-	"description": "Advanced Direct Mail/Newsletter mailer system with sophisticated options for personalization of emails including response statistics.",
+	"description": "Direct Mail - Advanced Direct Mail/Newsletter mailer system with sophisticated options for personalization of emails including response statistics.",
 	"keywords": [
 		"TYPO3",
 		"extension",
 		"directmail",
 		"newsletter"
 	],
+	"version": "14.0.0-alpha",
 	"homepage": "https://github.com/kartolo/direct_mail",
 	"authors": [
 		{
@@ -23,20 +24,30 @@
 	},
 	"require": {
 		"php": "^8.3 || ^8.4",
-		"typo3/cms-core": "^13.4.31",
-		"typo3/cms-dashboard": "^13.4.31",
-		"typo3/cms-lowlevel": "^13.4.31",
-		"typo3/cms-scheduler": "^13.4.31",
-		"friendsoftypo3/tt-address": "^9.1.1 || ^10.0"
+		"typo3/cms-core": "^14.3.3",
+		"typo3/cms-dashboard": "^14.3.3",
+		"typo3/cms-lowlevel": "^14.3.3",
+		"typo3/cms-scheduler": "^14.3.3",
+		"friendsoftypo3/tt-address": "^10.0"
+	},
+	"suggest": {
+		"friendsoftypo3/jumpurl": "dev-master"
 	},
 	"require-dev": {
-		"helhum/typo3-console": "^8.2",
+		"helhum/typo3-console": "^9.0",
 		"typo3/coding-standards": "^0.8",
 		"ssch/typo3-rector": "^3.14",
-		"typo3/cms-core": "^13.4",
-		"typo3/cms-dashboard": "^13.4",
-		"typo3/cms-lowlevel": "^13.4",
-		"typo3/cms-scheduler": "^13.4"
+		"typo3/cms-core": "^14.3.3",
+		"typo3/cms-dashboard": "^14.3.3",
+		"typo3/cms-lowlevel": "^14.3.3",
+		"typo3/cms-scheduler": "^14.3.3",
+		"typo3/cms-extensionmanager": "^14.3",
+		"typo3/cms-filelist": "^14.3",
+		"typo3/cms-fluid-styled-content": "^14.3",
+		"typo3/cms-rte-ckeditor": "^14.3",
+		"typo3/cms-tstemplate": "^14.3",
+		"friendsoftypo3/jumpurl": "dev-master"
+
 	},
 	"autoload": {
 		"psr-4": {
@@ -71,7 +82,5 @@
 			".Build/bin/rector process --config Build/rector.php",
 			"@phpcsfixer"
 		]
-	},
-	"minimum-stability": "dev",
-	"prefer-stable": true
+	}
 }

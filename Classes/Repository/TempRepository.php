@@ -503,6 +503,7 @@ class TempRepository extends MainRepository
         $queryBuilder->getRestrictions()->removeAll();
 
         $searchStrNew = 'directmail:mailingqueue';
+        $schedulerClassName = DirectmailScheduler::class;
 
         $queryBuilder
             ->select('t.*')
@@ -521,9 +522,27 @@ class TempRepository extends MainRepository
                 $queryBuilder->expr()->eq('t.task_group', $queryBuilder->quoteIdentifier('g.uid'))
             )
             ->where(
-                $queryBuilder->expr()->like(
-                    't.serialized_task_object',
-                    $queryBuilder->createNamedParameter('%' . $queryBuilder->escapeLikeWildcards($searchStrNew) . '%')
+                $queryBuilder->expr()->or(
+                    $queryBuilder->expr()->eq(
+                        't.tasktype',
+                        $queryBuilder->createNamedParameter($searchStrNew)
+                    ),
+                    $queryBuilder->expr()->eq(
+                        't.tasktype',
+                        $queryBuilder->createNamedParameter($schedulerClassName)
+                    ),
+                    $queryBuilder->expr()->like(
+                        't.serialized_task_object',
+                        $queryBuilder->createNamedParameter(
+                            '%' . $queryBuilder->escapeLikeWildcards($searchStrNew) . '%'
+                        )
+                    ),
+                    $queryBuilder->expr()->like(
+                        't.serialized_task_object',
+                        $queryBuilder->createNamedParameter(
+                            '%' . $queryBuilder->escapeLikeWildcards($schedulerClassName) . '%'
+                        )
+                    )
                 )
             )
             ->andWhere(

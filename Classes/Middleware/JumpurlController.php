@@ -16,7 +16,6 @@ namespace DirectMailTeam\DirectMail\Middleware;
  *
  * The TYPO3 project - inspiring people to share!
  */
-
 use DirectMailTeam\DirectMail\Repository\FeUsersRepository;
 use DirectMailTeam\DirectMail\Repository\SysDmailMaillogRepository;
 use DirectMailTeam\DirectMail\Repository\SysDmailRepository;
@@ -28,6 +27,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Crypto\HashAlgo;
 use TYPO3\CMS\Core\Crypto\HashService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
@@ -326,7 +326,7 @@ class JumpurlController implements MiddlewareInterface
      */
     protected function calculateJumpUrlHash(string $targetUrl): string
     {
-        return GeneralUtility::makeInstance(HashService::class)->hmac($targetUrl, 'jumpurl');
+        return GeneralUtility::makeInstance(HashService::class)->hmac($targetUrl, 'jumpurl', HashAlgo::SHA3_256);
     }
 
     /**

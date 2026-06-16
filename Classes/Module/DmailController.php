@@ -1651,8 +1651,8 @@ final class DmailController extends MainController
                     case 4:
                         $groups = array_unique(GeneralUtility::makeInstance(SysDmailGroupRepository::class)->getMailGroups($mailGroup['mail_groups'] ?? '', [$mailGroup['uid']], $this->perms_clause));
                         foreach ($groups as $group) {
-                            $group = max(0, $group);
-                            if ($group === 0) {
+                            $group = max(0, (int)$group);
+                            if (!$group) {
                                 continue;
                             }
                             $collect = $this->getSingleMailGroup($group);

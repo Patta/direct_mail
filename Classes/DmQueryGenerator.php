@@ -44,7 +44,7 @@ class DmQueryGenerator extends DatabaseIntegrityController
                 if ($this->showFieldAndTableNames) {
                     $label .= ' [' . $tN . ']';
                 }
-                $out[] = '<option value="' . htmlspecialchars((string)$tN) . '"' . ($tN == $cur ? ' selected' : '') . '>' . htmlspecialchars($label) . '</option>';
+                $out[] = '<option value="' . htmlspecialchars((string)$tN) . '"' . ($tN == $cur ? ' selected' : '') . '>' . htmlspecialchars((string)$label) . '</option>';
             }
         }
         $out[] = '</select>';

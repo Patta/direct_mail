@@ -17,10 +17,10 @@ namespace DirectMailTeam\DirectMail;
 
 use DirectMailTeam\DirectMail\Repository\SysDmailCategoryRepository;
 use DirectMailTeam\DirectMail\Repository\SysDmailTtContentCategoryMmRepository;
+use TYPO3\CMS\Core\Attribute\AsAllowedCallable;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MailUtility;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 /**
  * Container class for auxilliary functions of tx_directmail
@@ -34,7 +34,7 @@ class Container
     public $boundaryEnd = '<!--DMAILER_SECTION_BOUNDARY_END-->';
 
     /**
-     * @var TypoScriptFrontendController
+     * @var ContentObjectRenderer
      */
     protected $cObj;
 
@@ -58,6 +58,7 @@ class Container
      *
      * @return    string        content of the email with dmail boundaries
      */
+    #[AsAllowedCallable]
     public function insert_dMailer_boundaries($content, $conf = [])
     {
         if (isset($conf['useParentCObj']) && $conf['useParentCObj']) {
@@ -117,8 +118,8 @@ class Container
      */
     public function breakLines($content, array $conf)
     {
-        $linebreak = $GLOBALS['TSFE']->cObj->stdWrap(($conf['linebreak'] ?: chr(32) . LF), $conf['linebreak.']);
-        $charWidth = $GLOBALS['TSFE']->cObj->stdWrap(($conf['charWidth'] ? (int)$conf['charWidth'] : 76), $conf['charWidth.']);
+        $linebreak = $this->cObj->stdWrap(($conf['linebreak'] ?: chr(32) . LF), $conf['linebreak.']);
+        $charWidth = $this->cObj->stdWrap(($conf['charWidth'] ? (int)$conf['charWidth'] : 76), $conf['charWidth.']);
 
         return MailUtility::breakLinesForEmail($content, $linebreak, $charWidth);
     }
@@ -131,6 +132,7 @@ class Container
      *
      * @return string $content: the string wrapped with boundaries
      */
+    #[AsAllowedCallable]
     public function insertSitemapBoundaries($content, array $conf)
     {
         $uid = (int)$this->cObj->data['uid'];

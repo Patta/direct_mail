@@ -33,7 +33,8 @@ class SchedulerUtility
 
     public function getDMTable(): array
     {
-        $registeredClasses = $this->taskService->getAvailableTaskTypes();
+        $taskSerializer = GeneralUtility::makeInstance(TaskSerializer::class);
+        $taskService = GeneralUtility::makeInstance(TaskService::class);
 
         $tasks = GeneralUtility::makeInstance(TempRepository::class)->getDMTasks();
 
@@ -51,7 +52,7 @@ class SchedulerUtility
                 ];
 
                 try {
-                    $taskObject = $this->taskSerializer->deserialize($task['serialized_task_object']);
+                    $taskObject = $taskSerializer->deserialize($task);
                 } catch (InvalidTaskException $e) {
                     $taskData['errorMessage'] = $e->getMessage();
                     $taskData['class'] = $this->taskSerializer->extractClassName($task['serialized_task_object']);
@@ -59,7 +60,7 @@ class SchedulerUtility
                     continue;
                 }
 
-                $taskClass = $this->taskSerializer->resolveClassName($taskObject);
+                $taskClass = $taskObject::class;
                 $taskData['class'] = $taskClass;
 
                 if (!$this->isValidTaskObject($taskObject)) {
@@ -68,8 +69,9 @@ class SchedulerUtility
                     continue;
                 }
 
-                if (!isset($registeredClasses[$taskClass])) {
-                    $taskData['errorMessage'] = 'The class ' . $taskClass . ' is not a registered task';
+                $taskInformation = $taskService->getTaskDetailsFromTask($taskObject);
+                if ($taskInformation === null) {
+                    $taskData['errorMessage'] = 'The task ' . $taskObject->getTaskType() . ' is not a registered task';
                     $errorClasses[] = $taskData;
                     continue;
                 }
@@ -77,9 +79,8 @@ class SchedulerUtility
                 if ($taskObject instanceof ProgressProviderInterface) {
                     $taskData['progress'] = round((float)$taskObject->getProgress(), 2);
                 }
-
-                $taskData['classTitle'] = $registeredClasses[$taskClass]['title'];
-                $taskData['classExtension'] = $registeredClasses[$taskClass]['extension'];
+                $taskData['classTitle'] = $taskInformation['title'];
+                $taskData['classExtension'] = $taskInformation['category'];
                 $taskData['additionalInformation'] = $taskObject->getAdditionalInformation();
                 $taskData['disabled'] = (bool)$task['disable'];
                 $taskData['isRunning'] = !empty($task['serialized_executions']);
@@ -91,8 +92,7 @@ class SchedulerUtility
                     $taskData['type'] = 'recurring';
                     $taskData['frequency'] = $taskObject->getExecution()->getCronCmd() ?: $taskObject->getExecution()->getInterval();
                 }
-
-                $taskData['multiple'] = (bool)$taskObject->getExecution()->getMultiple();
+                $taskData['multiple'] = (bool)$taskObject->getExecution()->isParallelExecutionAllowed();
                 $taskData['lastExecutionFailure'] = false;
 
                 if (!empty($task['lastexecution_failure'])) {

@@ -24,9 +24,9 @@ use DirectMailTeam\DirectMail\Utility\Typo3ConfVarsUtility;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Mime\Address;
-use TYPO3\CMS\Core\Charset\CharsetConverter;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Localization\LanguageService;
+use TYPO3\CMS\Core\Mail\Mailer;
 use TYPO3\CMS\Core\Mail\MailMessage;
 use TYPO3\CMS\Core\Service\MarkerBasedTemplateService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -128,10 +128,6 @@ class Dmailer implements LoggerAwareInterface
      */
     protected int $simulateUsergroup = 0;
 
-    /**
-     * @var CharsetConverter
-     */
-    protected $charsetConverter;
     protected string $message = '';
     protected bool $notificationJob = false;
     protected string $jumperURLPrefix = '';
@@ -217,14 +213,6 @@ class Dmailer implements LoggerAwareInterface
     public function setJumperURLUseId(bool $jumperURLUseId): void
     {
         $this->jumperURLUseId = $jumperURLUseId;
-    }
-
-    protected function getCharsetConverter()
-    {
-        if (!$this->charsetConverter) {
-            $this->charsetConverter = GeneralUtility::makeInstance(CharsetConverter::class);
-        }
-        return $this->charsetConverter;
     }
 
     protected function getMarkerBasedTemplateService(): MarkerBasedTemplateService
@@ -722,7 +710,7 @@ class Dmailer implements LoggerAwareInterface
         $this->logger->debug($subject . ': ' . $message);
 
         if ($this->notificationJob) {
-            $fromName = $this->getCharsetConverter()->conv($this->fromName, $this->charset, $this->backendCharset) ?? '';
+            $fromName = DirectMailUtility::convertCharset($this->fromName, $this->charset, $this->backendCharset);
 
             $mail = GeneralUtility::makeInstance(MailMessage::class);
             $mail->setTo($this->fromEmail, $fromName);
@@ -734,7 +722,7 @@ class Dmailer implements LoggerAwareInterface
             }
 
             $mail->text($message);
-            $mail->send();
+            GeneralUtility::makeInstance(Mailer::class)->send($mail);
         }
     }
 
@@ -920,7 +908,7 @@ class Dmailer implements LoggerAwareInterface
             }
         }
 
-        $mailer->send();
+        GeneralUtility::makeInstance(Mailer::class)->send($mailer);
     }
 
     /**
@@ -1444,13 +1432,7 @@ class Dmailer implements LoggerAwareInterface
     protected function ensureCorrectEncoding(string $inputString): string
     {
         if ($inputString !== '' && $inputString !== '0') {
-            return $this
-                ->getCharsetConverter()
-                ->conv(
-                    $inputString,
-                    $this->backendCharset,
-                    $this->charset
-                );
+            return DirectMailUtility::convertCharset($inputString, $this->backendCharset, $this->charset);
         }
 
         return '';

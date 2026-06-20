@@ -104,6 +104,10 @@ final class MailerEngineController extends MainController
                                 'links' =>  array_fill(0, $paginator->getNumberOfPages(), ''),
                             ],
                             'id' => $this->id,
+                            'dateFormat' => [
+                                'day' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['ddmmyy'] ?? 'Y-m-d',
+                                'time' => $GLOBALS['TYPO3_CONF_VARS']['SYS']['hhmm'] ?? 'H:i',
+                            ],
                             'invoke' => $mailerEngine['invoke'],
                             'moduleName' => $this->moduleName,
                             'moduleUrl' => $mailerEngine['moduleUrl'],

@@ -1,2 +1,2 @@
 # Enable for testing
-# */5 * * * * cd /var/www/html && IS_DDEV_PROJECT=true vendor/bin/typo3 scheduler:run -vvv | tee -a /var/www/html/var/log/ddev-typo3-scheduler.log
+*/5 * * * * cd /var/www/html && IS_DDEV_PROJECT=true vendor/bin/typo3 scheduler:run -vvv | tee -a /var/www/html/var/log/ddev-typo3-scheduler.log

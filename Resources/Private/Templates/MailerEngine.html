@@ -108,10 +108,10 @@
             </f:if>
             <div class="float-end">
                 <button type="button"
-                        class="btn btn-default btn-sm t3js-toggle-table"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#scheduler-task-group-{taskGroupId}"
-                        aria-expanded="{f:if(condition: taskGroup.taskGroupCollapsed, then: 'false', else: 'true')}"
+                    class="btn btn-default btn-sm t3js-toggle-table"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#scheduler-task-group-{taskGroupId}"
+                    aria-expanded="{f:if(condition: taskGroup.taskGroupCollapsed, then: 'false', else: 'true')}"
                 >
                     <span class="collapseIcon">
                         <core:icon identifier="{f:if(condition: taskGroup.taskGroupCollapsed, then: 'actions-view-list-expand', else: 'actions-view-list-collapse')}" size="small" />
@@ -140,7 +140,7 @@
                             <td class="align-top">{task.uid}</td>
                             <td class="align-top col-task col-word-break">
                                 <div class="name">
-                                    <strong>{task.classTitle} ({task.classExtension})</strong>
+                                    <strong>{task.fullTitle}</strong>
                                     <f:if condition="{task.progress}">
                                         <div class="progress">
                                             <div class="progress-bar progress-bar-striped" role="progressbar" aria-valuenow="{task.progress}" aria-valuemin="0" aria-valuemax="100" style="width: {task.progress}%;">{task.progress}%</div>
@@ -159,12 +159,12 @@
                                     <span class="badge badge-success"><f:translate key="LLL:EXT:scheduler/Resources/Private/Language/locallang.xlf:status.running" /></span>
                                 </f:if>
                                 <f:if condition="{task.nextExecution} && {task.nextExecution} < {now} && !{taskGroup.groupHidden} && !{task.disabled}">
-                                        <span
-                                            class="badge badge-warning"
-                                            title="{f:translate(key:'LLL:EXT:scheduler/Resources/Private/Language/locallang.xlf:status.legend.scheduled')}"
-                                        >
-                                            <f:translate key="LLL:EXT:scheduler/Resources/Private/Language/locallang.xlf:status.late" />
-                                        </span>
+                                    <span
+                                        class="badge badge-warning"
+                                        title="{f:translate(key:'LLL:EXT:scheduler/Resources/Private/Language/locallang.xlf:status.legend.scheduled')}"
+                                    >
+                                        <f:translate key="LLL:EXT:scheduler/Resources/Private/Language/locallang.xlf:status.late" />
+                                    </span>
                                 </f:if>
                                 <f:if condition="{task.disabled} && !{task.isRunning}">
                                     <span class="badge badge-secondary"><f:translate key="LLL:EXT:scheduler/Resources/Private/Language/locallang.xlf:status.disabled" /></span>
@@ -175,23 +175,23 @@
                                 <f:if condition="{task.lastExecutionFailure}">
                                     <f:if condition="{task.lastExecutionFailureMessage}">
                                         <f:then>
-                                                <span
-                                                    class="badge badge-danger"
-                                                    title="{f:translate(
-                                                        key:'LLL:EXT:scheduler/Resources/Private/Language/locallang.xlf:msg.executionFailureReport',
-                                                        arguments:{0: task.lastExecutionFailureCode, 1: task.lastExecutionFailureMessage}
-                                                    )}"
-                                                >
-                                                    <f:translate key="LLL:EXT:scheduler/Resources/Private/Language/locallang.xlf:status.failure" />
-                                                </span>
+                                            <span
+                                                class="badge badge-danger"
+                                                title="{f:translate(
+                                                    key:'LLL:EXT:scheduler/Resources/Private/Language/locallang.xlf:msg.executionFailureReport',
+                                                    arguments:{0: task.lastExecutionFailureCode, 1: task.lastExecutionFailureMessage}
+                                                )}"
+                                            >
+                                                <f:translate key="LLL:EXT:scheduler/Resources/Private/Language/locallang.xlf:status.failure" />
+                                            </span>
                                         </f:then>
                                         <f:else>
-                                                <span
-                                                    class="badge badge-danger"
-                                                    title="{f:translate(key:'LLL:EXT:scheduler/Resources/Private/Language/locallang.xlf:msg.executionFailureDefault')}"
-                                                >
-                                                    <f:translate key="LLL:EXT:scheduler/Resources/Private/Language/locallang.xlf:status.failure" />
-                                                </span>
+                                            <span
+                                                class="badge badge-danger"
+                                                title="{f:translate(key:'LLL:EXT:scheduler/Resources/Private/Language/locallang.xlf:msg.executionFailureDefault')}"
+                                            >
+                                                <f:translate key="LLL:EXT:scheduler/Resources/Private/Language/locallang.xlf:status.failure" />
+                                            </span>
                                         </f:else>
                                     </f:if>
                                 </f:if>
@@ -200,7 +200,7 @@
                                 </f:for>
                             </td>
                             <td class="align-top col-state">
-                                <f:if condition="{task.type} === 'single'">
+                                <f:if condition="{task.runningType} === 'single'">
                                     <f:then>
                                         <f:translate key="LLL:EXT:scheduler/Resources/Private/Language/locallang.xlf:label.type.single" />
                                     </f:then>
@@ -210,7 +210,7 @@
                                 </f:if>
                             </td>
                             <td class="align-top col-state">
-                                <f:if condition="{task.type} === 'single'">
+                                <f:if condition="{task.runningType} === 'single'">
                                     <f:then>-</f:then>
                                     <f:else>{task.frequency}</f:else>
                                 </f:if>

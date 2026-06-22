@@ -5,124 +5,62 @@ declare(strict_types=1);
 namespace DirectMailTeam\DirectMail\Utility;
 
 /**
- * Code from:
- *  TYPO3\CMS\Scheduler\Controller\SchedulerModuleController listTasksAction
- *  TYPO3\CMS\Scheduler\Domain\Repository\SchedulerTaskRepository getGroupedTasks
+ * Builds the list of direct mail related scheduler tasks shown in the
+ * mailer engine module.
+ *
+ * The task list itself is provided by the public scheduler API
+ * (TYPO3\CMS\Scheduler\Domain\Repository\SchedulerTaskRepository::getGroupedTasks),
+ * which already performs the (security hardened) deserialization of the task
+ * objects. We only narrow the result down to the direct mail tasks and remap
+ * the group keys to the names expected by the Fluid template.
  */
 
 use DirectMailTeam\DirectMail\Repository\TempRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Scheduler\Exception\InvalidTaskException;
-use TYPO3\CMS\Scheduler\ProgressProviderInterface;
-use TYPO3\CMS\Scheduler\Service\TaskService;
-use TYPO3\CMS\Scheduler\Task\AbstractTask;
-use TYPO3\CMS\Scheduler\Task\TaskSerializer;
-use TYPO3\CMS\Scheduler\Validation\Validator\TaskValidator;
+use TYPO3\CMS\Scheduler\Domain\Repository\SchedulerTaskRepository;
 
 class SchedulerUtility
 {
-    public function __construct(
-        protected readonly TaskSerializer $taskSerializer,
-        protected readonly TaskService $taskService,
-    ) {}
-
-    protected function isValidTaskObject($task): bool
+    public static function getDMTable(): array
     {
-        return (new TaskValidator())->isValid($task);
-    }
+        $emptyTable = ['taskGroupsWithTasks' => [], 'errorClasses' => []];
 
-    public function getDMTable(): array
-    {
-        $taskSerializer = GeneralUtility::makeInstance(TaskSerializer::class);
-        $taskService = GeneralUtility::makeInstance(TaskService::class);
+        // UIDs of the direct mail scheduler tasks (precise filter on the serialized command).
+        $dmTaskUids = array_map(
+            intval(...),
+            array_column(GeneralUtility::makeInstance(TempRepository::class)->getDMTasks(), 'uid')
+        );
 
-        $tasks = GeneralUtility::makeInstance(TempRepository::class)->getDMTasks();
+        if ($dmTaskUids === []) {
+            return $emptyTable;
+        }
+
+        $groupedTasks = GeneralUtility::makeInstance(SchedulerTaskRepository::class)->getGroupedTasks();
 
         $taskGroupsWithTasks = [];
-        $errorClasses = [];
+        foreach (($groupedTasks['taskGroupsWithTasks'] ?? []) as $groupIndex => $group) {
+            $tasks = array_values(array_filter(
+                $group['tasks'] ?? [],
+                static fn(array $task): bool => in_array((int)$task['uid'], $dmTaskUids, true)
+            ));
 
-        if (is_array($tasks) && count($tasks) > 0) {
-            foreach ($tasks as $task) {
-                $taskData = [
-                    'uid' => (int)$task['uid'],
-                    'lastExecutionTime' => (int)$task['lastexecution_time'],
-                    'lastExecutionContext' => $task['lastexecution_context'],
-                    'errorMessage' => '',
-                    'description' => $task['description'],
-                ];
-
-                try {
-                    $taskObject = $taskSerializer->deserialize($task);
-                } catch (InvalidTaskException $e) {
-                    $taskData['errorMessage'] = $e->getMessage();
-                    $taskData['class'] = $this->taskSerializer->extractClassName($task['serialized_task_object']);
-                    $errorClasses[] = $taskData;
-                    continue;
-                }
-
-                $taskClass = $taskObject::class;
-                $taskData['class'] = $taskClass;
-
-                if (!$this->isValidTaskObject($taskObject)) {
-                    $taskData['errorMessage'] = 'The class ' . $taskClass . ' is not a valid task';
-                    $errorClasses[] = $taskData;
-                    continue;
-                }
-
-                $taskInformation = $taskService->getTaskDetailsFromTask($taskObject);
-                if ($taskInformation === null) {
-                    $taskData['errorMessage'] = 'The task ' . $taskObject->getTaskType() . ' is not a registered task';
-                    $errorClasses[] = $taskData;
-                    continue;
-                }
-
-                if ($taskObject instanceof ProgressProviderInterface) {
-                    $taskData['progress'] = round((float)$taskObject->getProgress(), 2);
-                }
-                $taskData['classTitle'] = $taskInformation['title'];
-                $taskData['classExtension'] = $taskInformation['category'];
-                $taskData['additionalInformation'] = $taskObject->getAdditionalInformation();
-                $taskData['disabled'] = (bool)$task['disable'];
-                $taskData['isRunning'] = !empty($task['serialized_executions']);
-                $taskData['nextExecution'] = (int)$task['nextexecution'];
-                $taskData['type'] = 'single';
-                $taskData['frequency'] = '';
-
-                if ($taskObject->getType() === AbstractTask::TYPE_RECURRING) {
-                    $taskData['type'] = 'recurring';
-                    $taskData['frequency'] = $taskObject->getExecution()->getCronCmd() ?: $taskObject->getExecution()->getInterval();
-                }
-                $taskData['multiple'] = (bool)$taskObject->getExecution()->isParallelExecutionAllowed();
-                $taskData['lastExecutionFailure'] = false;
-
-                if (!empty($task['lastexecution_failure'])) {
-                    $taskData['lastExecutionFailure'] = true;
-                    $exceptionArray = @unserialize($task['lastexecution_failure']);
-                    $taskData['lastExecutionFailureCode'] = '';
-                    $taskData['lastExecutionFailureMessage'] = '';
-
-                    if (is_array($exceptionArray)) {
-                        $taskData['lastExecutionFailureCode'] = $exceptionArray['code'];
-                        $taskData['lastExecutionFailureMessage'] = $exceptionArray['message'];
-                    }
-                }
-
-                // If a group is deleted or no group is set it needs to go into "not assigned groups"
-                $groupIndex = $task['isTaskGroupDeleted'] === 1 || $task['isTaskGroupDeleted'] === null ? 0 : (int)$task['task_group'];
-
-                if (!isset($taskGroupsWithTasks[$groupIndex])) {
-                    $taskGroupsWithTasks[$groupIndex] = [
-                        'tasks' => [],
-                        'groupName' => $task['taskGroupName'],
-                        'groupUid' => $task['taskGroupId'],
-                        'groupDescription' => $task['taskGroupDescription'],
-                        'groupHidden' => $task['isTaskGroupHidden'],
-                    ];
-                }
-
-                $taskGroupsWithTasks[$groupIndex]['tasks'][] = $taskData;
+            if ($tasks === []) {
+                continue;
             }
+
+            $taskGroupsWithTasks[$groupIndex] = [
+                'tasks' => $tasks,
+                'groupName' => $group['groupName'] ?? '',
+                'groupUid' => $group['uid'] ?? 0,
+                'groupDescription' => $group['description'] ?? '',
+                'groupHidden' => $group['hidden'] ?? false,
+            ];
         }
+
+        $errorClasses = array_values(array_filter(
+            $groupedTasks['errorClasses'] ?? [],
+            static fn(array $task): bool => in_array((int)$task['uid'], $dmTaskUids, true)
+        ));
 
         return ['taskGroupsWithTasks' => $taskGroupsWithTasks, 'errorClasses' => $errorClasses];
     }

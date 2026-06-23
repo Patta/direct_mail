@@ -31,16 +31,16 @@
 		"friendsoftypo3/tt-address": "^10.0"
 	},
 	"suggest": {
-		"friendsoftypo3/jumpurl": "dev-master"
+		"friendsoftypo3/jumpurl": "Allows collection of click statistics."
 	},
 	"require-dev": {
 		"helhum/typo3-console": "^9.0",
 		"typo3/coding-standards": "^0.8",
 		"ssch/typo3-rector": "^3.14",
-		"typo3/cms-core": "^14.3.3",
-		"typo3/cms-dashboard": "^14.3.3",
-		"typo3/cms-lowlevel": "^14.3.3",
-		"typo3/cms-scheduler": "^14.3.3",
+		"typo3/cms-core": "^14.3",
+		"typo3/cms-dashboard": "^14.3",
+		"typo3/cms-lowlevel": "^14.3",
+		"typo3/cms-scheduler": "^14.3",
 		"typo3/cms-extensionmanager": "^14.3",
 		"typo3/cms-filelist": "^14.3",
 		"typo3/cms-fluid-styled-content": "^14.3",

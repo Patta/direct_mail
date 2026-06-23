@@ -85,6 +85,18 @@ defined('TYPO3') || die();
      */
     $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks'][ExecuteSchedulableCommandTask::class]['additionalFields'] = DirectMailExecuteSchedulableCommandAdditionalFieldProvider::class;
 
+    // Add backend css
     // https://docs.typo3.org/c/typo3/cms-core/main/en-us/Changelog/12.3/Feature-100232-LoadAdditionalStylesheetsInTYPO3Backend.html
     $GLOBALS['TYPO3_CONF_VARS']['BE']['stylesheets']['direct_mail'] = 'EXT:direct_mail/Resources/Public/StyleSheets/';
+
+    // Exclude some parameters from the cHash calculation. Only relevant if enforceValidation is enabled.
+    // https://docs.typo3.org/permalink/t3coreapi:confval-typo3-conf-vars-fe-cachehash-excludedparameters
+    $GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'] = array_merge(
+        $GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'],
+        [
+            'mid',
+            'aC',
+            'jumpurl',
+        ]
+    );
 })();

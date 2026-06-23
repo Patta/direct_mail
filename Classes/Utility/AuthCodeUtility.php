@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace DirectMailTeam\DirectMail\Utility;
 
-use TYPO3\CMS\Core\Crypto\HashAlgo;
 use TYPO3\CMS\Core\Crypto\HashService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -45,6 +44,6 @@ class AuthCodeUtility
         }
         $preKey = implode('|', $recCopy_temp);
 
-        return GeneralUtility::makeInstance(HashService::class)->hmac($preKey, 'changeMe', HashAlgo::SHA3_256);
+        return GeneralUtility::makeInstance(HashService::class)->hmac($preKey, 'changeMe');
     }
 }

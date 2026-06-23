@@ -1816,7 +1816,6 @@ final class DmailController extends MainController
                     'icon' => $this->iconFactory->getIconForRecord('tt_content', $row, IconSize::SMALL),
                     'header' => $row['header'],
                     'CType' => $row['CType'],
-                    'list_type' => $row['list_type'],
                     'bodytext' => empty($row['bodytext']) ? '' : GeneralUtility::fixed_lgd_cs(strip_tags((string)$row['bodytext']), 200),
                     'color' => $row['module_sys_dmail_category'] ? 'red' : 'green',
                     'labelOnlyAll' => $row['module_sys_dmail_category'] ? $this->languageService->sL($this->lllFile . ':nl_l_ONLY') : $this->languageService->sL($this->lllFile . ':nl_l_ALL'),

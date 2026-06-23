@@ -975,7 +975,7 @@ class Dmailer implements LoggerAwareInterface
      */
     protected function substHREFsInHTML(): void
     {
-        if (!is_array($this->theParts['html']['hrefs'])) {
+        if (!isset($this->theParts['html']['hrefs']) || !is_array($this->theParts['html']['hrefs'])) {
             return;
         }
         foreach ($this->theParts['html']['hrefs'] as $urlId => $val) {

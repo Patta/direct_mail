@@ -80,7 +80,5 @@
 			".Build/bin/rector process --config Build/rector.php",
 			"@phpcsfixer"
 		]
-	},
-	"minimum-stability": "dev",
-	"prefer-stable": true
+	}
 }

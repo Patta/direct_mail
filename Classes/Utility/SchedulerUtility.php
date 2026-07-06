@@ -52,6 +52,7 @@ class SchedulerUtility
                 'tasks' => $tasks,
                 'groupName' => $group['groupName'] ?? '',
                 'groupUid' => $group['uid'] ?? 0,
+                'groupColor' => $group['color'] ?? '',
                 'groupDescription' => $group['description'] ?? '',
                 'groupHidden' => $group['hidden'] ?? false,
             ];

@@ -14,11 +14,6 @@ use TYPO3\CMS\Dashboard\Widgets\ChartDataProviderInterface;
 class DmStatisticsDataProvider implements ChartDataProviderInterface
 {
     /**
-     * @param int $newsletters
-     */
-    public function __construct(protected $newsletters = 10) {}
-
-    /**
      * @var array
      */
     protected $labels = [];
@@ -27,6 +22,10 @@ class DmStatisticsDataProvider implements ChartDataProviderInterface
      * @var array
      */
     protected $data = [];
+    /**
+     * @param int $newsletters
+     */
+    public function __construct(protected $newsletters = 10) {}
 
     /**
      * @inheritDoc

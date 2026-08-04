@@ -305,8 +305,8 @@ class JumpurlController implements MiddlewareInterface
     protected function performFeUserAutoLogin()
     {
         // TODO: add a switch in Direct Mail configuration to decide if this option should be enabled by default
-        if ($this->recipientTable === 'fe_users' &&
-            GeneralUtility::inList(
+        if ($this->recipientTable === 'fe_users'
+            && GeneralUtility::inList(
                 $this->directMailRecord['authcode_fieldList'],
                 'password'
             )) {

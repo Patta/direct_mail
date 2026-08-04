@@ -150,11 +150,11 @@ class DirectMailUtility
         if ($params['enable_jump_url'] ?? false) {
             $glue = self::getURLGlue($urls['baseUrl']);
             $htmlmail->setJumperURLPrefix(
-                $urls['baseUrl'] . $glue .
-                'mid=###SYS_MAIL_ID###' .
-                ((int)$params['jumpurl_tracking_privacy'] !== 0 ? '' : '&rid=###SYS_TABLE_NAME###_###USER_uid###') .
-                '&aC=###SYS_AUTHCODE###' .
-                '&jumpurl='
+                $urls['baseUrl'] . $glue
+                . 'mid=###SYS_MAIL_ID###'
+                . ((int)$params['jumpurl_tracking_privacy'] !== 0 ? '' : '&rid=###SYS_TABLE_NAME###_###USER_uid###')
+                . '&aC=###SYS_AUTHCODE###'
+                . '&jumpurl='
             );
 
             $htmlmail->setJumperURLUseId(true);

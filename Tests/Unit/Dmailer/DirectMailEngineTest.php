@@ -38,7 +38,7 @@ class DirectMailEngineTest extends UnitTestCase
 
         // Create an instance of "dmailer" with only the "extractMediaLinks" being mocked.
         $dmailer = $this->getMock('dmailer', ['extractMediaLinks']);
-        $dmailer->expects(self::once())->method('extractMediaLinks');
+        $dmailer->expects($this->once())->method('extractMediaLinks');
         $dmailer->setPartHtmlConfig('content', $content);
         $dmailer->setPartHtmlConfig('path', $path);
         $dmailer->setPartHtmlConfig('media', []);

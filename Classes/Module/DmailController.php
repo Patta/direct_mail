@@ -256,8 +256,8 @@ final class DmailController extends MainController
         $hideCategoryStep = false;
         $tsconfig = $this->getTSConfig();
 
-        if ((isset($tsconfig['tx_directmail.']['hideSteps']) &&
-            $tsconfig['tx_directmail.']['hideSteps'] === 'cat') || $isExternalDirectMailRecord) {
+        if ((isset($tsconfig['tx_directmail.']['hideSteps'])
+            && $tsconfig['tx_directmail.']['hideSteps'] === 'cat') || $isExternalDirectMailRecord) {
             $hideCategoryStep = true;
         }
 
@@ -1193,8 +1193,8 @@ final class DmailController extends MainController
                 $htmlmail->sendSimple($addresses);
                 $sentFlag = true;
                 $message = $this->createFlashMessage(
-                    $this->languageService->sL($this->lllFile . ':send_was_sent') . ' ' .
-                    $this->languageService->sL($this->lllFile . ':send_recipients') . ' ' . htmlspecialchars(implode(',', $addresses)),
+                    $this->languageService->sL($this->lllFile . ':send_was_sent') . ' '
+                    . $this->languageService->sL($this->lllFile . ':send_recipients') . ' ' . htmlspecialchars(implode(',', $addresses)),
                     $this->languageService->sL($this->lllFile . ':send_sending'),
                     ContextualFeedbackSeverity::OK,
                     false

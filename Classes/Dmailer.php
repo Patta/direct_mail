@@ -859,7 +859,7 @@ class Dmailer implements LoggerAwareInterface
         }
     }
 
-    protected function sendTheMail(Address $recipient, array $recipientRow = null): void
+    protected function sendTheMail(Address $recipient, ?array $recipientRow = null): void
     {
         /** @var MailMessage $mailer */
         $mailer = GeneralUtility::makeInstance(MailMessage::class);

@@ -18,7 +18,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException;
-use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
@@ -62,7 +61,8 @@ final class RecipientListController extends MainController
         public $requestUri = '',
         protected array $allowedTables = [DmailRecipientEnum::TtAddress->value, DmailRecipientEnum::FeUsers->value],
         protected bool $submit = false,
-        protected string $queryConfig = '',
+        // The query builder form submits its configuration as an array, not as a string.
+        protected array $queryConfig = [],
     ) {}
 
     public function handleRequest(ServerRequestInterface $request): ResponseInterface
@@ -94,7 +94,15 @@ final class RecipientListController extends MainController
         $this->indata = $parsedBody['indata'] ?? $this->queryParams['indata'] ?? [];
         $this->submit = (bool)($parsedBody['submit'] ?? $this->queryParams['submit'] ?? false);
 
-        $this->queryConfig = (string)($parsedBody['queryConfig'] ?? $this->queryParams['queryConfig'] ?? '');
+        $this->queryConfig = $parsedBody['queryConfig'] ?? $this->queryParams['queryConfig'] ?? [];
+
+        // This controller does not run through MainController::init(), so the additional
+        // recipient table from page TSconfig has to be resolved here as well.
+        $this->params = BackendUtility::getPagesTSconfig($this->id)['mod.']['web_modules.']['dmail.'] ?? [];
+        if ($this->params['userTable'] ?? false && isset($GLOBALS['TCA'][$this->params['userTable']]) && is_array($GLOBALS['TCA'][$this->params['userTable']])) {
+            $this->userTable = $this->params['userTable'];
+            $this->allowedTables[] = $this->userTable;
+        }
 
         $moduleTemplate = $this->moduleTemplateFactory->create($request);
         return $this->indexAction($moduleTemplate);
@@ -343,16 +351,12 @@ final class RecipientListController extends MainController
                         }
 
                         if ($table) {
-                            $queryGenerator = GeneralUtility::makeInstance(
-                                DmQueryGenerator::class,
-                                $this->iconFactory,
-                                GeneralUtility::makeInstance(UriBuilder::class),
-                                $this->moduleTemplateFactory
-                            );
+                            $queryGenerator = GeneralUtility::makeInstance(DmQueryGenerator::class);
                             $idLists[$table] = GeneralUtility::makeInstance(TempRepository::class)->getSpecialQueryIdList(
                                 $queryGenerator,
                                 $table,
-                                $mailGroup
+                                $mailGroup,
+                                $this->request
                             );
                         }
                         break;
@@ -625,7 +629,12 @@ final class RecipientListController extends MainController
                 }
 
                 if (($group['type'] ?? false) == 3 && $this->getBackendUser()->check('tables_modify', 'sys_dmail_group')) {
-                    $data['special'] = $this->specialQuery();
+                    $table = '';
+                    if (isset($result['queryInfo']['id_lists'])) {
+                        $tables = array_keys($result['queryInfo']['id_lists']);
+                        $table = (string)reset($tables);
+                    }
+                    $data['special'] = $this->specialQuery($table, $group);
                 }
         }
 
@@ -644,7 +653,9 @@ final class RecipientListController extends MainController
         $set = $this->set;
         $queryTable = $set['queryTable'] ?? '';
         $queryLimit = $set['queryLimit'] ?? $mailGroup['queryLimit'] ?? 100;
-        $queryLimitDisabled = ($set['queryLimitDisabled'] ?? $mailGroup['queryLimitDisabled']) == '' ? 0 : 1;
+        // The checkbox is only present in the form when the query form was submitted, so an
+        // unchecked box has to win over the stored value instead of falling back to it.
+        $queryLimitDisabled = isset($set['queryLimitDisabled']) ? (int)$set['queryLimitDisabled'] : ($mailGroup['queryLimitDisabled'] ? 1 : 0);
         $queryConfig = $this->queryConfig;
         $whichTables = (int)$mailGroup['whichtables'];
         $table = '';
@@ -657,7 +668,7 @@ final class RecipientListController extends MainController
         }
 
         $this->MOD_SETTINGS['queryTable'] = $queryTable ?: $table;
-        $this->MOD_SETTINGS['queryConfig'] = $queryConfig !== '' && $queryConfig !== '0' ? serialize($queryConfig) : $mailGroup['query'];
+        $this->MOD_SETTINGS['queryConfig'] = $queryConfig ? serialize($queryConfig) : $mailGroup['query'];
         $this->MOD_SETTINGS['search_query_smallparts'] = 1;
 
         $this->MOD_SETTINGS['search_query_makeQuery'] = 'all';
@@ -700,14 +711,20 @@ final class RecipientListController extends MainController
      *
      * @return array HTML form to make a special query
      */
-    protected function specialQuery(): array
+    protected function specialQuery(string $table = '', array $mailGroup = []): array
     {
-        $queryGenerator = GeneralUtility::makeInstance(
-            DmQueryGenerator::class,
-            $this->iconFactory,
-            GeneralUtility::makeInstance(UriBuilder::class),
-            $this->moduleTemplateFactory
-        );
+        $queryGenerator = GeneralUtility::makeInstance(DmQueryGenerator::class);
+
+        // On first display nothing has been submitted yet, so fall back to the query
+        // stored on the mail group record.
+        if (!($this->MOD_SETTINGS['queryConfig'] ?? '') && ($mailGroup['query'] ?? '')) {
+            $this->MOD_SETTINGS['queryConfig'] = $mailGroup['query'];
+        }
+
+        if ($table) {
+            $queryGenerator->initQueryConfig($table, $this->MOD_SETTINGS);
+        }
+
         //$queryGenerator->setFormName('dmailform');
         $queryGenerator->setFormName('queryform');
 
@@ -717,7 +734,7 @@ final class RecipientListController extends MainController
         $this->pageRenderer->loadJavaScriptModule('@typo3/lowlevel/query-generator.js');
         $this->pageRenderer->loadJavaScriptModule('@typo3/backend/date-time-picker.js');
 
-        [$html, $query] = $queryGenerator->queryMakerDM($this->request, $this->allowedTables);
+        [$html, $query] = $queryGenerator->queryMakerDM($this->request, $this->allowedTables, $this->set, $this->queryConfig);
         return ['selectTables' => $html, 'query' => $query];
     }
 

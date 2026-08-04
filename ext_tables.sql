@@ -78,6 +78,11 @@ CREATE TABLE sys_dmail (
   authcode_fieldList varchar(80) DEFAULT '' NOT NULL,
   recipientGroups varchar(80) DEFAULT '' NOT NULL,
   sys_language_uid int(11) DEFAULT '0' NOT NULL,
+  -- Since v13 the core auto-adds ctrl.transOrigPointerField whenever ctrl.languageField is set
+  -- (TcaEnrichment::setTransOrigPointerFieldInCtrl), so the backend list module queries these
+  -- columns even though sys_dmail records are never actually translated.
+  l10n_parent int(11) unsigned DEFAULT '0' NOT NULL,
+  l10n_state text,
   PRIMARY KEY (uid)
 );
 

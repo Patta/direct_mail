@@ -93,7 +93,7 @@ class ReadmailUtility
             $p = explode('X-TYPO3MID:', $content, 2);
             $l = explode(LF, $p[1], 2);
             [$mid, $hash] = GeneralUtility::trimExplode('-', $l[0]);
-            if (md5($mid) == $hash) {
+            if (md5($mid) === $hash) {
                 $moreParts = explode('_', substr($mid, 3));
                 $out = [
                     'mid' => $moreParts[0],

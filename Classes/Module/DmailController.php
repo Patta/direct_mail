@@ -60,6 +60,7 @@ final class DmailController extends MainController
         protected readonly string $moduleName = 'directmail_module_directmail',
         protected readonly string $lllFile = 'LLL:EXT:direct_mail/Resources/Private/Language/locallang_mod2-6.xlf',
         protected ?LanguageService $languageService = null,
+        protected ?ServerRequestInterface $request = null,
         protected array $pageinfo = [],
         protected int $id = 0,
         protected bool $access = false,
@@ -99,6 +100,7 @@ final class DmailController extends MainController
         $this->languageService = $this->getLanguageService();
         $this->flashMessageQueue = $this->getFlashMessageQueue('DmailQueue');
 
+        $this->request = $request;
         $queryParams = $request->getQueryParams();
         $parsedBody = $request->getParsedBody();
 
@@ -124,7 +126,7 @@ final class DmailController extends MainController
 
         $normalizedParams = $request->getAttribute('normalizedParams');
 
-        $this->pageRenderer->loadJavaScriptModule('@typo3/backend/date-time-picker.js');
+        $this->pageRenderer->loadJavaScriptModule('@directmailteam/directmail/datetime-picker.js');
 
         $this->requestUri = $normalizedParams->getRequestUri();
 
@@ -187,7 +189,7 @@ final class DmailController extends MainController
             if ($module == 'dmail') {
                 // Direct mail module
                 if (($this->pageinfo['doktype'] ?? 0) == 254) {
-                    $this->pageRenderer->loadJavaScriptModule('@typo3/backend/date-time-picker.js');
+                    $this->pageRenderer->loadJavaScriptModule('@directmailteam/directmail/datetime-picker.js');
                     $markers = $this->moduleContent();
                     $view->assignMultiple(
                         [
@@ -254,8 +256,8 @@ final class DmailController extends MainController
         $hideCategoryStep = false;
         $tsconfig = $this->getTSConfig();
 
-        if ((isset($tsconfig['tx_directmail.']['hideSteps']) &&
-            $tsconfig['tx_directmail.']['hideSteps'] === 'cat') || $isExternalDirectMailRecord) {
+        if ((isset($tsconfig['tx_directmail.']['hideSteps'])
+            && $tsconfig['tx_directmail.']['hideSteps'] === 'cat') || $isExternalDirectMailRecord) {
             $hideCategoryStep = true;
         }
 
@@ -1191,8 +1193,8 @@ final class DmailController extends MainController
                 $htmlmail->sendSimple($addresses);
                 $sentFlag = true;
                 $message = $this->createFlashMessage(
-                    $this->languageService->sL($this->lllFile . ':send_was_sent') . ' ' .
-                    $this->languageService->sL($this->lllFile . ':send_recipients') . ' ' . htmlspecialchars(implode(',', $addresses)),
+                    $this->languageService->sL($this->lllFile . ':send_was_sent') . ' '
+                    . $this->languageService->sL($this->lllFile . ':send_recipients') . ' ' . htmlspecialchars(implode(',', $addresses)),
                     $this->languageService->sL($this->lllFile . ':send_sending'),
                     ContextualFeedbackSeverity::OK,
                     false
@@ -1471,7 +1473,8 @@ final class DmailController extends MainController
             );
             $this->flashMessageQueue->addMessage($message);
         }
-        $sendMailDatetime = date('H:i d-m-Y', time());
+        // flatpickr parses the field value as ISO8601, a localised string makes it throw.
+        $sendMailDatetime = $this->sendMailDatetimeHr ?: (new \DateTime())->format('c');
         return [
             'id' => $this->id,
             'sys_dmail_uid' => $this->sys_dmail_uid,
@@ -1644,8 +1647,8 @@ final class DmailController extends MainController
                         }
 
                         if ($table !== '' && $table !== '0') {
-                            $queryGenerator = GeneralUtility::makeInstance(DmQueryGenerator::class, $this->iconFactory, GeneralUtility::makeInstance(UriBuilder::class), $this->moduleTemplateFactory);
-                            $idLists[$table] = GeneralUtility::makeInstance(TempRepository::class)->getSpecialQueryIdList($queryGenerator, $table, $mailGroup);
+                            $queryGenerator = GeneralUtility::makeInstance(DmQueryGenerator::class);
+                            $idLists[$table] = GeneralUtility::makeInstance(TempRepository::class)->getSpecialQueryIdList($queryGenerator, $table, $mailGroup, $this->request ?? $GLOBALS['TYPO3_REQUEST']);
                         }
                         break;
                     case 4:
@@ -1680,7 +1683,9 @@ final class DmailController extends MainController
         $set = $this->set;
         $queryTable = $set['queryTable'] ?? '';
         $queryLimit = $set['queryLimit'] ?? $mailGroup['queryLimit'] ?? 100;
-        $queryLimitDisabled = ($set['queryLimitDisabled'] ?? $mailGroup['queryLimitDisabled']) == '' ? 0 : 1;
+        // The checkbox is only present in the form when the query form was submitted, so an
+        // unchecked box has to win over the stored value instead of falling back to it.
+        $queryLimitDisabled = isset($set['queryLimitDisabled']) ? (int)$set['queryLimitDisabled'] : ($mailGroup['queryLimitDisabled'] ? 1 : 0);
         $queryConfig = $this->queryConfig;
         $whichTables = (int)$mailGroup['whichtables'];
         $table = '';

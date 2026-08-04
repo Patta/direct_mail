@@ -35,7 +35,7 @@
 	},
 	"require-dev": {
 		"helhum/typo3-console": "^9.0",
-		"typo3/coding-standards": "^0.8",
+		"typo3/coding-standards": "^0.9",
 		"ssch/typo3-rector": "^3.14",
 		"typo3/cms-core": "^14.3.5",
 		"typo3/cms-dashboard": "^14.3.5",
@@ -81,7 +81,5 @@
 			".Build/bin/rector process --config Build/rector.php",
 			"@phpcsfixer"
 		]
-	},
-	"minimum-stability": "dev",
-	"prefer-stable": true
+	}
 }

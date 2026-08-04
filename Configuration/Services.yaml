@@ -7,6 +7,12 @@ services:
   DirectMailTeam\DirectMail\:
     resource: '../Classes/*'
 
+  # Public so it can be pulled from the container instead of being new'ed with a
+  # hardcoded argument list - DatabaseIntegrityController::__construct() grew from
+  # three to six dependencies in 13.4.
+  DirectMailTeam\DirectMail\DmQueryGenerator:
+    public: true
+
   DirectMailTeam\DirectMail\Module\ConfigurationController:
     tags: ['backend.controller']
   DirectMailTeam\DirectMail\Module\DmailController:

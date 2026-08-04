@@ -81,8 +81,10 @@
             <form action="" method="post" name="queryform" enctype="multipart/form-data">
 
                 <div class="form-check form-switch">
-                    <input type="checkbox" name="SET[queryLimitDisabled]" value="1" class="form-check-input" {f:if(condition: "1 == {data.queryLimitDisabled}", then: 'checked="checked"')}>
-                    <label class="form-check-label" for="pageTS[includeMedia]">
+                    <f:comment>The hidden field makes an unchecked box submit a value, otherwise it cannot be switched off again.</f:comment>
+                    <input type="hidden" name="SET[queryLimitDisabled]" value="0">
+                    <input type="checkbox" name="SET[queryLimitDisabled]" value="1" class="form-check-input" {f:if(condition: "1 == {data.queryLimitDisabled}", then: 'checked="checked"')} id="queryLimitDisabled">
+                    <label class="form-check-label" for="queryLimitDisabled">
                         <f:translate key="{lll}queryLimitDisabled" />
                     </label>
                     <button class="btn btn-default" title="Update" name="just_update"><core:icon identifier="actions-refresh" /></button>

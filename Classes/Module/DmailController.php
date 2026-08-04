@@ -126,7 +126,7 @@ final class DmailController extends MainController
 
         $normalizedParams = $request->getAttribute('normalizedParams');
 
-        $this->pageRenderer->loadJavaScriptModule('@directmailteam/diractmail/datetime-picker.js');
+        $this->pageRenderer->loadJavaScriptModule('@directmailteam/directmail/datetime-picker.js');
 
         $this->requestUri = $normalizedParams->getRequestUri();
 
@@ -189,7 +189,7 @@ final class DmailController extends MainController
             if ($module == 'dmail') {
                 // Direct mail module
                 if (($this->pageinfo['doktype'] ?? 0) == 254) {
-                    $this->pageRenderer->loadJavaScriptModule('@directmailteam/diractmail/datetime-picker.js');
+                    $this->pageRenderer->loadJavaScriptModule('@directmailteam/directmail/datetime-picker.js');
                     $markers = $this->moduleContent();
                     $view->assignMultiple(
                         [

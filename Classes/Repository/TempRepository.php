@@ -6,6 +6,7 @@ namespace DirectMailTeam\DirectMail\Repository;
 
 use DirectMailTeam\DirectMail\DmQueryGenerator;
 use Doctrine\DBAL\ArrayParameterType;
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
@@ -234,11 +235,11 @@ class TempRepository extends MainRepository
      *
      * @return array The resulting query.
      */
-    public function getSpecialQueryIdList(DmQueryGenerator $queryGenerator, string $table, array $group): array
+    public function getSpecialQueryIdList(DmQueryGenerator $queryGenerator, string $table, array $group, ServerRequestInterface $request): array
     {
         $outArr = [];
         if ($group['query']) {
-            $select = $queryGenerator->getQueryDM((bool)$group['queryLimitDisabled']);
+            $select = $queryGenerator->getQueryDM((bool)$group['queryLimitDisabled'], $request, $table, $group);
             //$queryGenerator->extFieldLists['queryFields'] = 'uid';
             if ($select !== '' && $select !== '0') {
                 $connection = $this->getConnection($table);

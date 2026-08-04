@@ -20,7 +20,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Lowlevel\Controller\DatabaseIntegrityController;
+use TYPO3\CMS\Lowlevel\Controller\QuerySearchController;
 
 /**
  * Used to generate queries for selecting users in the database
@@ -28,7 +28,7 @@ use TYPO3\CMS\Lowlevel\Controller\DatabaseIntegrityController;
  * @author		Kasper Skårhøj <kasper@typo3.com>
  * @author		Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
  */
-class DmQueryGenerator extends DatabaseIntegrityController
+class DmQueryGenerator extends QuerySearchController
 {
     public $settings;
     protected array $allowedTables = ['tt_address', 'fe_users'];

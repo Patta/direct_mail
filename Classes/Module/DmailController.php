@@ -1261,7 +1261,8 @@ final class DmailController extends MainController
                 $result = $this->cmd_compileMailGroup($recipientGroups);
                 $queryInfo = $result['queryInfo'];
 
-                $distributionTime = strtotime($this->sendMailDatetimeHr);
+                // Respect time zone here because the JavaScript date picker cannot do that
+                $distributionTime = (int)(new \DateTime($this->sendMailDatetimeHr))->format('U') - (int)(new \DateTime())->format('Z');
                 if ($distributionTime < time()) {
                     $distributionTime = time();
                 }
@@ -1473,8 +1474,12 @@ final class DmailController extends MainController
             );
             $this->flashMessageQueue->addMessage($message);
         }
+
+        // Respect time zone here because the JavaScript date picker cannot do that
+        $adjustedSendMailDateTime = (int)(new \DateTime())->format('U') + (int)(new \DateTime())->format('Z');
         // flatpickr parses the field value as ISO8601, a localised string makes it throw.
-        $sendMailDatetime = $this->sendMailDatetimeHr ?: (new \DateTime())->format('c');
+        $sendMailDatetime = $this->sendMailDatetimeHr ?: gmdate('c', $adjustedSendMailDateTime);
+        
         return [
             'id' => $this->id,
             'sys_dmail_uid' => $this->sys_dmail_uid,

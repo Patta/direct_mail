@@ -388,12 +388,10 @@ class DirectMail
                 ];
             }
 
-            $images = $this->renderImages($imagesArray, $fieldname);
-        } else {
-            $images = '';
+            return $this->renderImages($imagesArray, $fieldname);
         }
 
-        return $images;
+        return '';
     }
 
     /**

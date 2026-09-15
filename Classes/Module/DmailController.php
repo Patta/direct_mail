@@ -528,9 +528,7 @@ final class DmailController extends MainController
                         $showTabs = ArrayUtility::removeArrayEntryByValue($showTabs, $hideTab);
                     }
                 }
-                if (!isset($tsconfig['tx_directmail.']['defaultTab'])) {
-                    $tsconfig['tx_directmail.']['defaultTab'] = 'dmail';
-                }
+                $tsconfig['tx_directmail.']['defaultTab'] ??= 'dmail';
 
                 foreach ($showTabs as $showTab) {
                     $open = ($tsconfig['tx_directmail.']['defaultTab'] == $showTab);
@@ -705,9 +703,7 @@ final class DmailController extends MainController
         static $languages;
         $languageUids = [];
 
-        if ($languages === null) {
-            $languages = GeneralUtility::makeInstance(TranslationConfigurationProvider::class)->getSystemLanguages();
-        }
+        $languages ??= GeneralUtility::makeInstance(TranslationConfigurationProvider::class)->getSystemLanguages();
 
         // loop trough all sys languages and check if there is matching page translation
         foreach ($languages as $lang) {

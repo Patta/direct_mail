@@ -267,9 +267,7 @@ class Dmailer implements LoggerAwareInterface
             $mediaParts = explode('cid:part', $this->dmailer['boundaryParts_html'][$bKey][1]);
             reset($mediaParts);
             next($mediaParts);
-            if (!isset($this->dmailer['boundaryParts_html'][$bKey]['mediaList'])) {
-                $this->dmailer['boundaryParts_html'][$bKey]['mediaList'] = '';
-            }
+            $this->dmailer['boundaryParts_html'][$bKey]['mediaList'] ??= '';
             foreach ($mediaParts as $part) {
                 $this->dmailer['boundaryParts_html'][$bKey]['mediaList'] .= ',' . strtok($part, '.');
             }
@@ -378,9 +376,7 @@ class Dmailer implements LoggerAwareInterface
 
             $this->theParts['html']['content'] = '';
             if ($this->flagHtml && (($recipientRow['module_sys_dmail_html'] ?? false) || $tableNameChar === 'P')) {
-                if (!isset($recipientRow['sys_dmail_categories_list'])) {
-                    $recipientRow['sys_dmail_categories_list'] = '';
-                }
+                $recipientRow['sys_dmail_categories_list'] ??= '';
                 $tempContentHTML = $this->getBoundaryParts($this->dmailer['boundaryParts_html'], $recipientRow['sys_dmail_categories_list']);
                 if ($this->mailHasContent) {
                     $this->theParts['html']['content'] = $this->replaceMailMarkers($tempContentHTML, $recipientRow, $additionalMarkers);
@@ -1406,7 +1402,7 @@ class Dmailer implements LoggerAwareInterface
             }
         }
         if (!$host) {
-            $host = 'localhost.localdomain';
+            return 'localhost.localdomain';
         }
         return $host;
     }

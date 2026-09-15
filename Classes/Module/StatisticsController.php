@@ -572,9 +572,7 @@ final class StatisticsController extends MainController
             }
             if (!$htmlLinkFound) {
                 $urlCounter['plain'][$id]['counter'] = $c['counter'];
-                if (!isset($urlCounter['total'][$id]['counter'])) {
-                    $urlCounter['total'][$id]['counter'] = 0;
-                }
+                $urlCounter['total'][$id]['counter'] ??= 0;
                 $urlCounter['total'][$id]['counter'] += $c['counter'];
             }
         }
@@ -1577,7 +1575,7 @@ final class StatisticsController extends MainController
 
         // if fetching the newsletter using http, set the url to http here
         if (Typo3ConfVarsUtility::getDMConfigUseHttpToFetch()) {
-            $baseUrl = str_replace('https', 'http', $baseUrl);
+            return str_replace('https', 'http', $baseUrl);
         }
 
         return $baseUrl;
@@ -1657,7 +1655,7 @@ final class StatisticsController extends MainController
         }
 
         if (isset($this->implodedParams['maxLabelLength']) && ($this->implodedParams['maxLabelLength'] > 0)) {
-            $label = GeneralUtility::fixed_lgd_cs($label, (int)$this->implodedParams['maxLabelLength']);
+            return GeneralUtility::fixed_lgd_cs($label, (int)$this->implodedParams['maxLabelLength']);
         }
 
         return $label;

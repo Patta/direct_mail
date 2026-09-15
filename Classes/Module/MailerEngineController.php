@@ -153,11 +153,10 @@ final class MailerEngineController extends MainController
 
     protected function getSchedulerTable(): array
     {
-        $schedulerTable = ['taskGroupsWithTasks' => [], 'errorClasses' => []];
         if (ExtensionManagementUtility::isLoaded('scheduler')) {
-            $schedulerTable = SchedulerUtility::getDMTable();
+            return SchedulerUtility::getDMTable();
         }
-        return $schedulerTable;
+        return ['taskGroupsWithTasks' => [], 'errorClasses' => []];
     }
 
     /**

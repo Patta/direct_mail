@@ -668,7 +668,7 @@ final class RecipientListController extends MainController
         }
 
         $this->MOD_SETTINGS['queryTable'] = $queryTable ?: $table;
-        $this->MOD_SETTINGS['queryConfig'] = $queryConfig ? serialize($queryConfig) : $mailGroup['query'];
+        $this->MOD_SETTINGS['queryConfig'] = $queryConfig !== [] ? serialize($queryConfig) : $mailGroup['query'];
         $this->MOD_SETTINGS['search_query_smallparts'] = 1;
 
         $this->MOD_SETTINGS['search_query_makeQuery'] = 'all';

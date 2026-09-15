@@ -24,10 +24,10 @@
 	},
 	"require": {
 		"php": "^8.3 || ^8.4",
-		"typo3/cms-core": "^13.4.31",
-		"typo3/cms-dashboard": "^13.4.31",
-		"typo3/cms-lowlevel": "^13.4.31",
-		"typo3/cms-scheduler": "^13.4.31",
+		"typo3/cms-core": "^13.4.35",
+		"typo3/cms-dashboard": "^13.4.35",
+		"typo3/cms-lowlevel": "^13.4.35",
+		"typo3/cms-scheduler": "^13.4.35",
 		"friendsoftypo3/tt-address": "^9.1.1 || ^10.0"
 	},
 	"suggest": {
@@ -36,7 +36,7 @@
 	"require-dev": {
 		"helhum/typo3-console": "^8.2",
 		"typo3/coding-standards": "^0.9",
-		"ssch/typo3-rector": "^3.14",
+		"ssch/typo3-rector": "^3.16",
 		"typo3/cms-core": "^13.4",
 		"typo3/cms-dashboard": "^13.4",
 		"typo3/cms-lowlevel": "^13.4",

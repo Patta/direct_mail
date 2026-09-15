@@ -58,9 +58,7 @@ final class ConfigurationController extends MainController
         $this->submit = isset($parsedBody['submit']);
 
         foreach (['includeMedia', 'flowedFormat', 'use_rdct', 'long_link_mode', 'enable_jump_url', 'jumpurl_tracking_privacy', 'enable_mailto_jump_url', 'showContentTitle', 'prependContentTitle'] as $checkboxName) {
-            if (!isset($this->pageTS[$checkboxName])) {
-                $this->pageTS[$checkboxName] = '0';
-            }
+            $this->pageTS[$checkboxName] ??= '0';
         }
 
         $this->updatePageTS();
@@ -143,9 +141,7 @@ final class ConfigurationController extends MainController
             $this->languageService = $this->getLanguageService();
             $this->pageTS = $request->getParsedBody()['pageTS'] ?? [];
             foreach (['includeMedia', 'flowedFormat', 'use_rdct', 'long_link_mode', 'enable_jump_url', 'jumpurl_tracking_privacy', 'enable_mailto_jump_url', 'showContentTitle', 'prependContentTitle'] as $checkboxName) {
-                if (!isset($this->pageTS[$checkboxName])) {
-                    $this->pageTS[$checkboxName] = '0';
-                }
+                $this->pageTS[$checkboxName] ??= '0';
             }
             $done = false;
             if (is_array($this->pageTS) && count($this->pageTS)) {
@@ -173,15 +169,9 @@ final class ConfigurationController extends MainController
 
     protected function setDefaultValues(): void
     {
-        if (!isset($this->implodedParams['plainParams'])) {
-            $this->implodedParams['plainParams'] = '&type=99';
-        }
-        if (!isset($this->implodedParams['quick_mail_charset'])) {
-            $this->implodedParams['quick_mail_charset'] = 'utf-8';
-        }
-        if (!isset($this->implodedParams['direct_mail_charset'])) {
-            $this->implodedParams['direct_mail_charset'] = 'iso-8859-1';
-        }
+        $this->implodedParams['plainParams'] ??= '&type=99';
+        $this->implodedParams['quick_mail_charset'] ??= 'utf-8';
+        $this->implodedParams['direct_mail_charset'] ??= 'iso-8859-1';
     }
 
     /**

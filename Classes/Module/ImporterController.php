@@ -412,9 +412,7 @@ final class ImporterController extends MainController
                     $charSets[] = ['val' => $charset, 'text' => $charset];
                 }
 
-                if (!isset($this->indata['charset'])) {
-                    $this->indata['charset'] = 'ISO-8859-1';
-                }
+                $this->indata['charset'] ??= 'ISO-8859-1';
                 $output['subtitle'] = $this->languageService->sL($this->lllFile . ':mailgroup_import_mapping_charset');
 
                 $output['mapping']['charset'] = $charSets;

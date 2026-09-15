@@ -22,7 +22,7 @@ class FetchUtility
         $context = null;
         $applicationContext = Environment::getContext();
         if ($applicationContext->isDevelopment()) {
-            $context = stream_context_create(
+            return stream_context_create(
                 [
                     'ssl' => [
                         'verify_peer' => Typo3ConfVarsUtility::getDMConfigSSLVerifyPeer(),

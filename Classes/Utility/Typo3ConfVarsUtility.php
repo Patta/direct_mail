@@ -36,7 +36,7 @@ class Typo3ConfVarsUtility
         $rowFieldsArray = GeneralUtility::trimExplode(',', self::getDMConfigDefaultRecipFields());
         $dmConfigAddRecipFields = self::getDMConfigAddRecipFields();
         if ($dmConfigAddRecipFields !== '' && $dmConfigAddRecipFields !== '0') {
-            $rowFieldsArray = array_merge($rowFieldsArray, GeneralUtility::trimExplode(',', $dmConfigAddRecipFields));
+            return array_merge($rowFieldsArray, GeneralUtility::trimExplode(',', $dmConfigAddRecipFields));
         }
         return $rowFieldsArray;
     }

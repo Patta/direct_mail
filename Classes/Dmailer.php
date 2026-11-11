@@ -957,7 +957,7 @@ class Dmailer implements LoggerAwareInterface
             }
 
             //@TODO
-            $this->theParts['html']['path'] = $urlPart['scheme'] . '://' . $user . $urlPart['host'] . GeneralUtility::getIndpEnv('TYPO3_SITE_PATH');
+            $this->theParts['html']['path'] = $urlPart['scheme'] . '://' . $user . $urlPart['host'] . $GLOBALS['TYPO3_REQUEST']->getAttribute('normalizedParams')->getSitePath();
             return true;
         }
 
@@ -1380,7 +1380,7 @@ class Dmailer implements LoggerAwareInterface
         $host = '';
         // If not called from the command-line, resolve on getIndpEnv()
         if ($requestHost && !Environment::isCli()) {
-            $host = GeneralUtility::getIndpEnv('HTTP_HOST');
+            $host = $GLOBALS['TYPO3_REQUEST']->getAttribute('normalizedParams')->getHttpHost();
         }
         if (!$host) {
             // will fail for PHP 4.1 and 4.2

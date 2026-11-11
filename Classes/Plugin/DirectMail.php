@@ -765,7 +765,7 @@ class DirectMail
             'parameter' => $link,
             'forceAbsoluteUrl' => '1',
             'forceAbsoluteUrl.' => [
-                'scheme' => GeneralUtility::getIndpEnv('TYPO3_SSL') ? 'https' : 'http',
+                'scheme' => $GLOBALS['TYPO3_REQUEST']->getAttribute('normalizedParams')->isHttps() ? 'https' : 'http',
             ],
         ]);
     }

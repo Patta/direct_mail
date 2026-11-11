@@ -11,6 +11,15 @@
 			<generator>LFEditor</generator>
 		</header>
 		<body>
+		<trans-unit id="scheduler.mailFromDraft.title">
+			<source>Direct Mail: Create Mail from Draft</source>
+		</trans-unit>
+		<trans-unit id="scheduler.mailFromDraft.description">
+			<source>Create and schedule a Direct Mail from an existing draft.</source>
+		</trans-unit>
+		<trans-unit id="scheduler.mailFromDraft.draft">
+			<source>Draft</source>
+		</trans-unit>
 		<trans-unit id="module_sys_dmail_group.category">
 			<source>Subscribe to categories</source>
 		</trans-unit>

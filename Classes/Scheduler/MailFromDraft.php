@@ -21,8 +21,11 @@ use DirectMailTeam\DirectMail\Repository\SysDmailRepository;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
+use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Messaging\FlashMessageService;
 use TYPO3\CMS\Core\Routing\InvalidRouteArgumentsException;
 use TYPO3\CMS\Core\Site\SiteFinder;
+use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Scheduler\Task\AbstractTask;
 
@@ -44,11 +47,63 @@ class MailFromDraft extends AbstractTask
     /**
      * Setter function to set the draft ID that the task should use
      *
-     * @param int $draftUid The UID of the sys_dmail record (needs to be of type=3 or type=4)
+     * @param int $draftUid The UID of a type 2 or type 3 sys_dmail draft
      */
     public function setDraft(int $draftUid): void
     {
         $this->draftUid = $draftUid;
+    }
+
+    /**
+     * Expose the legacy property under the TCA column name for TYPO3's scheduler migration.
+     */
+    public function getTaskParameters(): array
+    {
+        return ['module_sys_dmail_draft_uid' => $this->draftUid];
+    }
+
+    /**
+     * Accept the TCA field name and legacy serialized parameter names.
+     */
+    public function setTaskParameters(array $parameters): void
+    {
+        $this->draftUid = (int)($parameters['module_sys_dmail_draft_uid'] ?? $parameters['draftUid'] ?? $parameters['selecteddraft'] ?? $this->draftUid);
+    }
+
+    public function getAvailableDrafts(array &$config): void
+    {
+        $repository = GeneralUtility::makeInstance(SysDmailRepository::class);
+        foreach ([2, 3] as $type) {
+            foreach ($repository->getDraftsByType($type) as $draft) {
+                $config['items'][] = [
+                    'label' => $draft['subject'] . ' [' . $draft['uid'] . ']',
+                    'value' => (int)$draft['uid'],
+                ];
+            }
+        }
+    }
+
+    public function validateTaskParameters(array $parameters): bool
+    {
+        $draftUid = (int)($parameters['module_sys_dmail_draft_uid'] ?? $parameters['draftUid'] ?? $parameters['selecteddraft'] ?? $this->draftUid);
+        $draft = null;
+        if ($draftUid > 0) {
+            $draft = GeneralUtility::makeInstance(SysDmailRepository::class)->getDraftByUid($draftUid)[0] ?? null;
+        }
+        if ($draftUid > 0 && $draft !== null && in_array((int)$draft['type'], [2, 3], true)) {
+            return true;
+        }
+
+        GeneralUtility::makeInstance(FlashMessageService::class)
+            ->getMessageQueueByIdentifier()
+            ->addMessage(GeneralUtility::makeInstance(
+                FlashMessage::class,
+                'Select a valid Direct Mail draft.',
+                '',
+                ContextualFeedbackSeverity::ERROR
+            ));
+
+        return false;
     }
 
     /**

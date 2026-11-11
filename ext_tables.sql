@@ -239,3 +239,7 @@ CREATE TABLE tt_address (
 CREATE TABLE tt_content (
   module_sys_dmail_category int(10) unsigned DEFAULT '0' NOT NULL,
 );
+
+CREATE TABLE tx_scheduler_task (
+  module_sys_dmail_draft_uid int(11) unsigned DEFAULT '0' NOT NULL
+);

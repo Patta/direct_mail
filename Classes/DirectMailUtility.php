@@ -19,7 +19,6 @@ use DirectMailTeam\DirectMail\Repository\SysDmailRepository;
 use DirectMailTeam\DirectMail\Utility\DmRegistryUtility;
 use DirectMailTeam\DirectMail\Utility\FetchUtility;
 use DirectMailTeam\DirectMail\Utility\RdctUtility;
-use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Core\SystemEnvironmentBuilder;
 use TYPO3\CMS\Core\Http\ServerRequestFactory;
@@ -29,6 +28,7 @@ use TYPO3\CMS\Core\Messaging\FlashMessage;
 use TYPO3\CMS\Core\Messaging\FlashMessageRendererResolver;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\FileRepository;
+use TYPO3\CMS\Core\Schema\TcaSchemaFactory;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -55,7 +55,11 @@ class DirectMailUtility
      */
     public static function fName($name): string
     {
-        return stripslashes(self::getLanguageService()->sL(BackendUtility::getItemLabel('sys_dmail', $name)));
+        $schemaFactory = GeneralUtility::makeInstance(TcaSchemaFactory::class);
+        $schema = $schemaFactory->has('sys_dmail') ? $schemaFactory->get('sys_dmail') : null;
+        $label = $schema?->hasField($name) ? $schema->getField($name)->getLabel() : '';
+
+        return stripslashes(self::getLanguageService()->sL($label));
     }
 
     /**

@@ -1,7 +1,7 @@
 name: ddev-cron
 repository: ddev/ddev-cron
-version: 1.9.0
-install_date: "2026-06-12T12:07:41+02:00"
+version: 1.9.1
+install_date: "2026-11-11T14:25:41+01:00"
 project_files:
     - web-build/Dockerfile.ddev-cron
     - web-build/cron.conf

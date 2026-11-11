@@ -34,8 +34,8 @@ class DmMailEngineStatusDataProvider implements ChartDataProviderInterface
 
         return [
             'labels' => [
-                $this->getLanguageService()->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang.xlf:widgets.dm.label.sent') . ': ' . $countScheduled,
-                $this->getLanguageService()->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang.xlf:widgets.dm.label.unsent') . ': ' . $countNotScheduled,
+                $this->getLanguageService()->sL('direct_mail.messages:widgets.dm.label.sent') . ': ' . $countScheduled,
+                $this->getLanguageService()->sL('direct_mail.messages:widgets.dm.label.unsent') . ': ' . $countNotScheduled,
             ],
             'datasets' => [
                 [

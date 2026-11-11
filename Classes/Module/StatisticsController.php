@@ -1332,13 +1332,13 @@ final class StatisticsController extends MainController
         $dmailInfo = [];
         $fromInfo = [
             $this->languageService->sL($this->lllFile . ':view_replyto') => htmlspecialchars((string)$row['replyto_name']) . '&lt;' . htmlspecialchars((string)$row['replyto_email']) . '&gt;',
-            $this->languageService->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang_tca.xlf:sys_dmail.organisation') => htmlspecialchars((string)$row['organisation']),
-            $this->languageService->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang_tca.xlf:sys_dmail.return_path') => htmlspecialchars((string)$row['return_path']),
+            $this->languageService->sL('direct_mail.tca:sys_dmail.organisation') => htmlspecialchars((string)$row['organisation']),
+            $this->languageService->sL('direct_mail.tca:sys_dmail.return_path') => htmlspecialchars((string)$row['return_path']),
         ];
         $mailInfo = [
-            $this->languageService->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang_tca.xlf:sys_dmail.priority') => BackendUtility::getProcessedValue('sys_dmail', 'priority', $row['priority']),
-            $this->languageService->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang_tca.xlf:sys_dmail.transfer_encoding') => BackendUtility::getProcessedValue('sys_dmail', 'encoding', $row['encoding']),
-            $this->languageService->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang_tca.xlf:sys_dmail.charset') => BackendUtility::getProcessedValue('sys_dmail', 'charset', $row['charset']),
+            $this->languageService->sL('direct_mail.tca:sys_dmail.priority') => BackendUtility::getProcessedValue('sys_dmail', 'priority', $row['priority']),
+            $this->languageService->sL('direct_mail.tca:sys_dmail.transfer_encoding') => BackendUtility::getProcessedValue('sys_dmail', 'encoding', $row['encoding']),
+            $this->languageService->sL('direct_mail.tca:sys_dmail.charset') => BackendUtility::getProcessedValue('sys_dmail', 'charset', $row['charset']),
         ];
         $dmailData = [
             'plainParams' => '',

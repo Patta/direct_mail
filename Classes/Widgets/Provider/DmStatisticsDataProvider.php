@@ -38,7 +38,7 @@ class DmStatisticsDataProvider implements ChartDataProviderInterface
             'labels' => $this->labels,
             'datasets' => [
                 [
-                    'label' => $this->getLanguageService()->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang.xlf:widgets.dm.label.numberSentNewsletters'),
+                    'label' => $this->getLanguageService()->sL('direct_mail.messages:widgets.dm.label.numberSentNewsletters'),
                     'backgroundColor' => WidgetApi::getDefaultChartColors()[0],
                     'border' => 0,
                     'data' => $this->data,

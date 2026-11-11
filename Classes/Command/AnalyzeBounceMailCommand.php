@@ -154,7 +154,7 @@ class AnalyzeBounceMailCommand extends Command
         $count    = 0;
 
         if (!extension_loaded('imap')) {
-            $io->error($this->languageService->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang_mod2-6.xlf:scheduler.bounceMail.phpImapError'));
+            $io->error($this->languageService->sL('direct_mail.mod2-6:scheduler.bounceMail.phpImapError'));
             return Command::FAILURE;
         }
 
@@ -277,7 +277,7 @@ class AnalyzeBounceMailCommand extends Command
             $errors = imap_errors();
             $errorMsg = is_array($errors) ? implode(', ', $errors) : 'Unknown IMAP error';
             $io->error(
-                $this->languageService->sL('LLL:EXT:direct_mail/Resources/Private/Language/locallang_mod2-6.xlf:scheduler.bounceMail.dataVerification')
+                $this->languageService->sL('direct_mail.mod2-6:scheduler.bounceMail.dataVerification')
                 . $errorMsg
             );
             return false;

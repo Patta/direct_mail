@@ -31,8 +31,8 @@ return RectorConfig::configure()
         AddVoidReturnTypeWhereNoReturnRector::class,
     ])
     ->withSkip([
-        Ssch\TYPO3Rector\CodeQuality\General\GeneralUtilityMakeInstanceToConstructorPropertyRector::class,
-        Ssch\TYPO3Rector\TYPO314\v0\UseStrongerCryptographicAlgorithmForHMACRector::class,
+        Ssch\TYPO3Rector\CodeQuality\General\GeneralUtilityMakeInstanceToConstructorPropertyRector::class, // breaking changes
+        Ssch\TYPO3Rector\TYPO314\v0\UseStrongerCryptographicAlgorithmForHMACRector::class, // breaking changes
         __DIR__ . '/../.Build/*',
         __DIR__ . '/../.ddev/*',
         __DIR__ . '/../Build/*',

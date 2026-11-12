@@ -970,7 +970,7 @@ final class ImporterController extends MainController
                 // new file
                 $file['newfile']['target'] = $this->userTempFolder();
                 $file['newfile']['data'] = 'import_' . $this->getTimestampFromAspect() . '.txt';
-                $extendedFileUtility->start($file);
+                $extendedFileUtility->start($file, []);
                 $newfileObj = $extendedFileUtility->func_newfile($file['newfile']);
                 if (is_object($newfileObj)) {
                     $storageConfig = $newfileObj->getStorage()->getConfiguration();
@@ -1015,7 +1015,7 @@ final class ImporterController extends MainController
         if ($httpHost != $refInfo['host'] && !$GLOBALS['TYPO3_CONF_VARS']['SYS']['doNotCheckReferer']) {
             $this->beUser->writeLog(SystemLogType::FILE, 0, 2, 1, 'Referer host "%s" and server host "%s" did not match!', [$refInfo['host'], $httpHost]);
         } else {
-            $extendedFileUtility->start($this->csvFile);
+            $extendedFileUtility->start($this->csvFile, $this->request->getUploadedFiles());
             $extendedFileUtility->setExistingFilesConflictMode(DuplicationBehavior::REPLACE);
             $tempFile = $extendedFileUtility->func_upload($this->csvFile['upload']['1']);
 

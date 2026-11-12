@@ -8,7 +8,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 defined('TYPO3') || die();
 
-// https://docs.typo3.org/m/typo3/reference-coreapi/12.4/en-us/ExtensionArchitecture/BestPractises/ConfigurationFiles.html
+// https://docs.typo3.org/m/typo3/reference-coreapi/14.3/en-us/ExtensionArchitecture/BestPractices/ConfigurationFiles.html
 (function () {
     // Get extension configuration so we can use it here:
     $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('direct_mail');
@@ -75,7 +75,7 @@ defined('TYPO3') || die();
     );
 })();
 
-// Register the FormEngine node for password masking in the `directmail:analyzebouncemail` task form.
+// Register the FormEngine node for password masking in the `directmail:analyzebouncemail` command form.
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1760000001] = [
     'nodeName' => 'analyzeBounceMailCommandConfiguration',
     'priority' => 40,

@@ -5,7 +5,7 @@ declare(strict_types=1);
 use TYPO3\CMS\Core\Imaging\IconProvider\BitmapIconProvider;
 use TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider;
 
-// https://docs.typo3.org/m/typo3/reference-coreapi/12.4/en-us/ApiOverview/Icon/Index.html
+// https://docs.typo3.org/m/typo3/reference-coreapi/14.3/en-us/ApiOverview/Icon/Index.html
 return [
     // icon identifier
     'directmail-attachment' => [

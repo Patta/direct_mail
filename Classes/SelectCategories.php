@@ -30,7 +30,7 @@ class SelectCategories
     /**
      * Get the localization of the select field items (right-hand part of form)
      * Referenced by TCA
-     * https://docs.typo3.org/m/typo3/reference-tca/12.4/en-us/ColumnsConfig/CommonProperties/ItemsProcFunc.html
+     * https://docs.typo3.org/m/typo3/reference-tca/14.3/en-us/ColumnsConfig/CommonProperties/ItemsProcFunc.html
      *
      * @param	array $params Array of searched translation
      */

@@ -1067,7 +1067,7 @@ final class DmailController extends MainController
         ];
 
         if ($this->params['test_tt_address_uids'] ?? false) {
-            // https://api.typo3.org/12.4/class_t_y_p_o3_1_1_c_m_s_1_1_core_1_1_utility_1_1_general_utility.html#a87225a3db04071355a62a36ed8636add
+            // https://api.typo3.org/14.3/classes/TYPO3-CMS-Core-Utility-GeneralUtility.html
             $intList = GeneralUtility::intExplode(',', $this->params['test_tt_address_uids'], true);
             $rows = GeneralUtility::makeInstance(TtAddressRepository::class)->selectTtAddressForTestmail($intList, $this->perms_clause);
             $ids = [];

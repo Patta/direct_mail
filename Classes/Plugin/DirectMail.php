@@ -46,8 +46,7 @@ use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\DataProcessing\FilesProcessor;
 
 /**
- * https://docs.typo3.org/m/typo3/reference-coreapi/12.4/en-us/ExtensionArchitecture/HowTo/FrontendPlugin/AbstractPlugin.html
- * https://api.typo3.org/main/_abstract_plugin_8php_source.html
+ * https://docs.typo3.org/m/typo3/reference-coreapi/14.3/en-us/ExtensionArchitecture/HowTo/FrontendPlugin/Index.html
  */
 class DirectMail
 {

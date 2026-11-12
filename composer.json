@@ -8,7 +8,7 @@
 		"directmail",
 		"newsletter"
 	],
-	"version": "14.0.0-alpha",
+	"version": "14.0.0-beta",
 	"homepage": "https://github.com/kartolo/direct_mail",
 	"authors": [
 		{

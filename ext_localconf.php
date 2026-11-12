@@ -60,7 +60,6 @@ defined('TYPO3') || die();
     $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['direct_mail']['SSLVerifyPeerName'] = $extConf['SSLVerifyPeerName'] ?? 1;
 
     // Add backend css
-    // https://docs.typo3.org/c/typo3/cms-core/main/en-us/Changelog/12.3/Feature-100232-LoadAdditionalStylesheetsInTYPO3Backend.html
     $GLOBALS['TYPO3_CONF_VARS']['BE']['stylesheets']['direct_mail'] = 'EXT:direct_mail/Resources/Public/StyleSheets/';
 
     // Exclude some parameters from the cHash calculation. Only relevant if enforceValidation is enabled.
@@ -73,11 +72,11 @@ defined('TYPO3') || die();
             'jumpurl',
         ]
     );
-})();
 
-// Register the FormEngine node for password masking in the `directmail:analyzebouncemail` command form.
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1760000001] = [
-    'nodeName' => 'analyzeBounceMailCommandConfiguration',
-    'priority' => 40,
-    'class' => AnalyzeBounceMailCommandConfigurationElement::class,
-];
+    // Register the FormEngine node for password masking in the `directmail:analyzebouncemail` command form.
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1760000001] = [
+        'nodeName' => 'analyzeBounceMailCommandConfiguration',
+        'priority' => 40,
+        'class' => AnalyzeBounceMailCommandConfigurationElement::class,
+    ];
+})();

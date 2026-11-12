@@ -7,9 +7,10 @@ namespace DirectMailTeam\DirectMail\Scheduler;
 use TYPO3\CMS\Scheduler\Task\ExecuteSchedulableCommandTask;
 
 /**
- * Password-masking wrapper for the `directmail:analyzebouncemail` task-list information.
+ * Password-masking wrapper for the `directmail:analyzebouncemail` command's task-list information.
  *
- * TYPO3 uses this class only to redact task-list information; it does not register a separate task type.
+ * The TCA override maps this class to the command's scheduler task type; it does not
+ * register a separate task type.
  */
 class AnalyzeBounceMailTaskListPasswordMaskingWrapper extends ExecuteSchedulableCommandTask
 {
@@ -27,7 +28,6 @@ class AnalyzeBounceMailTaskListPasswordMaskingWrapper extends ExecuteSchedulable
     private function maskPasswordInTaskList(string $information): string
     {
         $pattern = '/(' . preg_quote(self::PASSWORD_ARGUMENT, '/') . '(?:=|\s+))(?:"[^"]*"|\'[^\']*\'|[^\s<]+)/';
-        // Symfony quotes option values containing whitespace in the task information.
         return preg_replace_callback(
             $pattern,
             static fn(array $matches): string => $matches[1] . '********',

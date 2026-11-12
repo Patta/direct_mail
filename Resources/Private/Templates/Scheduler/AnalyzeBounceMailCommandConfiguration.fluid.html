@@ -4,11 +4,17 @@
 >
 
 <f:comment>
-    Based on TYPO3 Scheduler 14.3.11:
-    https://github.com/TYPO3/typo3/blob/14.3/typo3/sysext/scheduler/Resources/Private/Templates/CommandConfiguration.fluid.html
+    Based on TYPO3 Scheduler 14.3.11.
     Compare with the upstream template when upgrading TYPO3.
-    Template change: Options marked as passwords use the password input type to mask their values and disable spellchecking.
+
+    Src:
+    https://github.com/TYPO3/typo3/blob/14.3/typo3/sysext/scheduler/Resources/Private/Templates/CommandConfiguration.fluid.html
+
+    Template change:
+    - password option fields use the password input type to mask their values
+    - disable spellchecking for password fields
 </f:comment>
+
 <f:for each="{fields.arguments}" key="name" as="field">
     <fieldset class="form-section">
         <div class="form-group t3js-formengine-validation-marker t3js-formengine-palette-field">

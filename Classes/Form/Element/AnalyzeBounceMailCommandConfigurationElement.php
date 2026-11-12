@@ -20,14 +20,9 @@ class AnalyzeBounceMailCommandConfigurationElement extends SchedulableCommandCon
     protected function getCommandOptionFields(InputDefinition $inputDefinition, ExecuteSchedulableCommandTask $task): array
     {
         $fields = parent::getCommandOptionFields($inputDefinition, $task);
-        foreach ($inputDefinition->getOptions() as $option) {
-            $name = strtolower($option->getName());
-            $description = strtolower($option->getDescription());
-            if (str_contains($name, 'password') || str_contains($description, 'password')) {
-                $fields['options'][$option->getName()]['isPassword'] = true;
-            }
+        if (isset($fields['options']['password'])) {
+            $fields['options']['password']['isPassword'] = true;
         }
-
         return $fields;
     }
 

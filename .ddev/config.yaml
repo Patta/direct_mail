@@ -1,7 +1,7 @@
 name: direct-mail-v14
 type: typo3
 docroot: public
-php_version: "8.3"
+php_version: "8.5"
 webserver_type: apache-fpm
 xdebug_enabled: false
 additional_hostnames: []

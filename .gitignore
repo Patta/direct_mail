@@ -11,8 +11,6 @@
 .vscode
 
 # Dev
-/.Build/
-
 /.ddev/*
 !/.ddev/config.yaml
 !/.ddev/docker-compose.phpmyadmin.yaml
@@ -39,4 +37,6 @@
 /.php-cs-fixer.cache
 /composer.lock
 /config
+/public
 /var
+/vendor

@@ -14,7 +14,9 @@ use Ssch\TYPO3Rector\Set\Typo3SetList;
 
 return RectorConfig::configure()
     ->withPaths([
-        __DIR__ . '/..',
+        __DIR__ . '/../Classes',
+        __DIR__ . '/../Configuration',
+        __DIR__ . '/../ext_localconf.php',
     ])
     ->withPhpVersion(PhpVersion::PHP_83)
     ->withSets([
@@ -33,9 +35,4 @@ return RectorConfig::configure()
     ->withSkip([
         Ssch\TYPO3Rector\CodeQuality\General\GeneralUtilityMakeInstanceToConstructorPropertyRector::class, // breaking changes
         Ssch\TYPO3Rector\TYPO314\v0\UseStrongerCryptographicAlgorithmForHMACRector::class, // breaking changes
-        __DIR__ . '/../.Build/*',
-        __DIR__ . '/../.ddev/*',
-        __DIR__ . '/../Build/*',
-        __DIR__ . '/../config/*',
-        __DIR__ . '/../var/*',
     ]);
